@@ -176,21 +176,23 @@ const Navbar = () => {
       {/* Hero section avec image d'arrière-plan */}
       {location.pathname === "/" && (
         <div 
-          className="relative py-20 bg-cover bg-center"
+          className="relative py-24 bg-cover bg-center min-h-[600px] flex items-center"
           style={{
-            backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/background-hero.jpg')"
+            backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url('/background-hero.jpg')"
           }}
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center text-white mb-8">
-              <h1 className="text-4xl sm:text-5xl font-bold mb-4">
-                Trouvez la voiture parfaite pour votre prochain voyage
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div className="text-center text-white mb-12">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                Trouvez la voiture parfaite<br />pour votre prochain voyage
               </h1>
-              <p className="text-xl opacity-90">
+              <p className="text-xl sm:text-2xl text-white/90 font-light">
                 Location de voitures entre particuliers partout au Maroc
               </p>
             </div>
-            <SearchBar />
+            <div className="relative z-10">
+              <SearchBar />
+            </div>
           </div>
         </div>
       )}
