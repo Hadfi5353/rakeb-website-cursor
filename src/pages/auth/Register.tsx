@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft, Mail, User, Lock, Car, Search } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
+import { Confetti, type ConfettiRef } from "@/components/ui/confetti";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -21,6 +22,7 @@ const Register = () => {
   const { signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const confettiRef = useRef<ConfettiRef>(null);
 
   const validateForm = () => {
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.confirmPassword) {
@@ -61,7 +63,40 @@ const Register = () => {
     setIsLoading(true);
     try {
       await signUp(formData.email, formData.password, formData.firstName, formData.lastName, formData.role);
-      navigate("/auth/login");
+      
+      // Déclencher l'animation confetti
+      const duration = 3 * 1000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+      const randomInRange = (min: number, max: number) =>
+        Math.random() * (max - min) + min;
+
+      const interval = setInterval(function() {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+        });
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+        });
+      }, 250);
+
+      // Attendre un peu avant de rediriger pour voir l'animation
+      setTimeout(() => {
+        navigate("/auth/login");
+      }, 2000);
     } catch (error) {
       console.error("Erreur lors de l'inscription:", error);
     } finally {
@@ -71,6 +106,14 @@ const Register = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <Confetti
+        ref={confettiRef}
+        className="fixed inset-0 pointer-events-none"
+        options={{
+          disableForReducedMotion: true
+        }}
+      />
+      
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Link to="/" className="flex items-center text-sm text-gray-600 mb-8 hover:text-primary transition-colors">
           <ArrowLeft className="w-4 h-4 mr-2" />
