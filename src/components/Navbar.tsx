@@ -15,6 +15,7 @@ import {
   HelpCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import SearchBar from "@/components/SearchBar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,111 +28,113 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="fixed w-full z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo à gauche */}
-          <Link 
-            to="/" 
-            className="flex items-center space-x-2 text-2xl font-bold"
-          >
-            <Car className="h-8 w-8 text-primary" />
-            <span className="bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
-              Rakeb
-            </span>
-          </Link>
-
-          {/* Menu Desktop à droite */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Link to="/cars/add">
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="border-primary text-primary hover:bg-primary hover:text-white transition-colors duration-200"
-              >
-                <Car className="w-4 h-4 mr-2" />
-                Devenir propriétaire
-              </Button>
+    <header className="fixed w-full z-50">
+      <nav className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo à gauche */}
+            <Link 
+              to="/" 
+              className="flex items-center space-x-2 text-2xl font-bold"
+            >
+              <Car className="h-8 w-8 text-primary" />
+              <span className="bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+                Rakeb
+              </span>
             </Link>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            {/* Menu Desktop à droite */}
+            <div className="hidden md:flex items-center space-x-4">
+              <Link to="/cars/add">
                 <Button 
-                  variant="ghost" 
+                  variant="outline" 
                   size="sm"
-                  className="border border-gray-200 rounded-full p-2 hover:shadow-md transition-all duration-200"
+                  className="border-primary text-primary hover:bg-primary hover:text-white transition-colors duration-200"
                 >
-                  <Menu className="w-4 h-4 mr-2" />
-                  <User className="w-4 h-4" />
+                  <Car className="w-4 h-4 mr-2" />
+                  Devenir propriétaire
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64">
-                <DropdownMenuItem asChild>
-                  <Link to="/auth/login" className="cursor-pointer">
-                    <LogIn className="mr-2 h-4 w-4" />
-                    <span>Connexion</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/auth/register" className="cursor-pointer">
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    <span>Inscription</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/cars/add" className="cursor-pointer">
-                    <Car className="mr-2 h-4 w-4" />
-                    <span>Devenir propriétaire</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/how-it-works" className="cursor-pointer">
-                    <HelpCircle className="mr-2 h-4 w-4" />
-                    <span>Comment fonctionne Rakeb</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/contact" className="cursor-pointer">
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    <span>Contacter le service client</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/legal" className="cursor-pointer">
-                    <Info className="mr-2 h-4 w-4" />
-                    <span>Informations légales</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/insurance" className="cursor-pointer">
-                    <Shield className="mr-2 h-4 w-4" />
-                    <span>Assurance et protection</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/tools" className="cursor-pointer">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Outils pour les hôtes</span>
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+              </Link>
 
-          {/* Menu Mobile */}
-          <div className="md:hidden">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsOpen(!isOpen)}
-              className="p-2"
-            >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="border border-gray-200 rounded-full p-2 hover:shadow-md transition-all duration-200"
+                  >
+                    <Menu className="w-4 h-4 mr-2" />
+                    <User className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64">
+                  <DropdownMenuItem asChild>
+                    <Link to="/auth/login" className="cursor-pointer">
+                      <LogIn className="mr-2 h-4 w-4" />
+                      <span>Connexion</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/auth/register" className="cursor-pointer">
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      <span>Inscription</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/cars/add" className="cursor-pointer">
+                      <Car className="mr-2 h-4 w-4" />
+                      <span>Devenir propriétaire</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/how-it-works" className="cursor-pointer">
+                      <HelpCircle className="mr-2 h-4 w-4" />
+                      <span>Comment fonctionne Rakeb</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/contact" className="cursor-pointer">
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      <span>Contacter le service client</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/legal" className="cursor-pointer">
+                      <Info className="mr-2 h-4 w-4" />
+                      <span>Informations légales</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/insurance" className="cursor-pointer">
+                      <Shield className="mr-2 h-4 w-4" />
+                      <span>Assurance et protection</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/tools" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Outils pour les hôtes</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Menu Mobile */}
+            <div className="md:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsOpen(!isOpen)}
+                className="p-2"
+              >
+                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      </nav>
 
       {/* Menu Mobile Overlay */}
       {isOpen && (
@@ -184,7 +187,7 @@ const Navbar = () => {
           </div>
         </div>
       )}
-    </nav>
+    </header>
   );
 };
 
