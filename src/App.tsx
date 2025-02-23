@@ -12,6 +12,8 @@ import Profile from "./pages/profile/Profile";
 import CarDetail from "./pages/cars/CarDetail";
 import AddCar from "./pages/cars/AddCar";
 import NotFound from "./pages/NotFound";
+import RenterDashboard from "./pages/dashboard/RenterDashboard";
+import OwnerDashboard from "./pages/dashboard/OwnerDashboard";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +31,8 @@ const App = () => (
             <Route path="/profile" element={<Profile />} />
             <Route path="/cars/:id" element={<CarDetail />} />
             <Route path="/cars/add" element={<AddCar />} />
+            <Route path="/dashboard/owner" element={<OwnerDashboard />} />
+            <Route path="/dashboard/renter" element={<RenterDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

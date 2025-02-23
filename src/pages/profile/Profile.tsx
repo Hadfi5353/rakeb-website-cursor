@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,6 +29,14 @@ const Profile = () => {
     }
     getProfile();
   }, [user, navigate]);
+
+  useEffect(() => {
+    if (profile.role === 'owner') {
+      navigate('/dashboard/owner');
+    } else if (profile.role === 'renter') {
+      navigate('/dashboard/renter');
+    }
+  }, [profile.role, navigate]);
 
   const getProfile = async () => {
     try {
