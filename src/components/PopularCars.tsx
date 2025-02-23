@@ -1,5 +1,5 @@
 
-import { Car, Star, User } from "lucide-react";
+import { Car, MapPin, Star, User } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 
 const cars = [
