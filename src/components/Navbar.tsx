@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -11,11 +12,11 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <a href="/" className="flex-shrink-0 flex items-center">
+            <Link to="/" className="flex-shrink-0 flex items-center">
               <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
                 Rakeb
               </span>
-            </a>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
@@ -26,12 +27,16 @@ const Navbar = () => {
             <a href="#popular" className="text-gray-600 hover:text-primary transition-colors">
               Véhicules populaires
             </a>
-            <Button variant="outline" className="mr-2 border-primary hover:bg-primary/5">
-              Mettre en location
-            </Button>
-            <Button className="bg-primary hover:bg-primary-dark transition-colors">
-              Se connecter
-            </Button>
+            <Link to="/cars/add">
+              <Button variant="outline" className="mr-2 border-primary hover:bg-primary/5">
+                Mettre en location
+              </Button>
+            </Link>
+            <Link to="/auth/login">
+              <Button className="bg-primary hover:bg-primary-dark transition-colors">
+                Se connecter
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Navigation Button */}
@@ -63,12 +68,16 @@ const Navbar = () => {
               Véhicules populaires
             </a>
             <div className="flex flex-col space-y-2 p-3">
-              <Button variant="outline" className="w-full border-primary hover:bg-primary/5">
-                Mettre en location
-              </Button>
-              <Button className="w-full bg-primary hover:bg-primary-dark transition-colors">
-                Se connecter
-              </Button>
+              <Link to="/cars/add">
+                <Button variant="outline" className="w-full border-primary hover:bg-primary/5">
+                  Mettre en location
+                </Button>
+              </Link>
+              <Link to="/auth/login">
+                <Button className="w-full bg-primary hover:bg-primary-dark transition-colors">
+                  Se connecter
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
