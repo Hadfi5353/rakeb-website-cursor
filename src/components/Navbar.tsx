@@ -42,6 +42,11 @@ const Navbar = () => {
                     Mettre en location
                   </Button>
                 </Link>
+                <Link to="/profile">
+                  <Button variant="outline" className="mr-2">
+                    Mon Profil
+                  </Button>
+                </Link>
                 <Button onClick={handleSignOut} variant="ghost">
                   Se déconnecter
                 </Button>
@@ -96,6 +101,11 @@ const Navbar = () => {
                   <Link to="/cars/add">
                     <Button variant="outline" className="w-full border-primary hover:bg-primary/5">
                       Mettre en location
+                    </Button>
+                  </Link>
+                  <Link to="/profile">
+                    <Button variant="outline" className="w-full">
+                      Mon Profil
                     </Button>
                   </Link>
                   <Button onClick={handleSignOut} variant="ghost" className="w-full">
