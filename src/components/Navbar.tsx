@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { 
   Menu, 
   X, 
@@ -24,13 +24,11 @@ import {
   DropdownMenuGroup,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import SearchBar from "@/components/SearchBar";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const handleSignOut = async () => {
     await signOut();
@@ -38,149 +36,137 @@ const Navbar = () => {
   };
 
   return (
-    <div className="fixed w-full z-50">
-      {/* Barre principale */}
-      <nav className="relative bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <Link 
-              to="/" 
-              className="flex items-center space-x-2 text-2xl font-bold"
+    <nav className="fixed w-full z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link 
+            to="/" 
+            className="flex items-center space-x-2 text-2xl font-bold"
+          >
+            <Car className="h-8 w-8 text-primary" />
+            <span className="bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+              Rakeb
+            </span>
+          </Link>
+
+          {/* Menu Desktop */}
+          <div className="hidden md:flex items-center space-x-6">
+            {/* Bouton Devenir Hôte */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="border-primary text-primary hover:bg-primary hover:text-white transition-all duration-200"
+                >
+                  <Car className="w-4 h-4 mr-2" />
+                  Devenir Hôte
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-72">
+                <div className="p-4 bg-gradient-to-br from-primary/10 to-transparent">
+                  <h3 className="text-lg font-semibold mb-2">Gagnez de l'argent avec votre voiture</h3>
+                  <p className="text-sm text-gray-600 mb-2">
+                    Rejoignez notre communauté d'hôtes et gagnez jusqu'à 5000 DH par mois.
+                  </p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem asChild>
+                    <Link to="/cars/add" className="cursor-pointer">
+                      <Car className="mr-2 h-4 w-4" />
+                      <span>Ajouter une voiture</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/tools" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Outils pour les hôtes</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Menu Profil */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="border border-gray-200 rounded-full p-2 hover:shadow-md transition-all duration-200"
+                >
+                  <Menu className="w-4 h-4 mr-2" />
+                  <User className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                {!user ? (
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem asChild>
+                      <Link to="/auth/login" className="cursor-pointer">
+                        <LogIn className="mr-2 h-4 w-4" />
+                        <span>Connexion</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/auth/register" className="cursor-pointer">
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        <span>Inscription</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                ) : (
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogIn className="mr-2 h-4 w-4" />
+                    <span>Se déconnecter</span>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem asChild>
+                    <Link to="/how-it-works" className="cursor-pointer">
+                      <HelpCircle className="mr-2 h-4 w-4" />
+                      <span>Comment ça marche</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/contact" className="cursor-pointer">
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      <span>Contacter le service client</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/legal" className="cursor-pointer">
+                      <Info className="mr-2 h-4 w-4" />
+                      <span>Informations légales</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/insurance" className="cursor-pointer">
+                      <Shield className="mr-2 h-4 w-4" />
+                      <span>Assurance et protection</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Bouton Menu Mobile */}
+          <div className="md:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2"
             >
-              <Car className="h-8 w-8 text-primary" />
-              <span className="bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
-                Rakeb
-              </span>
-            </Link>
-
-            {/* Menu Desktop */}
-            <div className="hidden md:flex items-center space-x-6">
-              {/* Bouton Devenir Hôte */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="border-primary text-primary hover:bg-primary hover:text-white transition-all duration-200"
-                  >
-                    <Car className="w-4 h-4 mr-2" />
-                    Devenir Hôte
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-72">
-                  <div className="p-4 bg-gradient-to-br from-primary/10 to-transparent">
-                    <h3 className="text-lg font-semibold mb-2">Gagnez de l'argent avec votre voiture</h3>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Rejoignez notre communauté d'hôtes et gagnez jusqu'à 5000 DH par mois.
-                    </p>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem asChild>
-                      <Link to="/cars/add" className="cursor-pointer">
-                        <Car className="mr-2 h-4 w-4" />
-                        <span>Ajouter une voiture</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/tools" className="cursor-pointer">
-                        <Settings className="mr-2 h-4 w-4" />
-                        <span>Outils pour les hôtes</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {/* Menu Profil */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="border border-gray-200 rounded-full p-2 hover:shadow-md transition-all duration-200"
-                  >
-                    <Menu className="w-4 h-4 mr-2" />
-                    <User className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64">
-                  {!user ? (
-                    <DropdownMenuGroup>
-                      <DropdownMenuItem asChild>
-                        <Link to="/auth/login" className="cursor-pointer">
-                          <LogIn className="mr-2 h-4 w-4" />
-                          <span>Connexion</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/auth/register" className="cursor-pointer">
-                          <UserPlus className="mr-2 h-4 w-4" />
-                          <span>Inscription</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                  ) : (
-                    <DropdownMenuItem onClick={handleSignOut}>
-                      <LogIn className="mr-2 h-4 w-4" />
-                      <span>Se déconnecter</span>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem asChild>
-                      <Link to="/how-it-works" className="cursor-pointer">
-                        <HelpCircle className="mr-2 h-4 w-4" />
-                        <span>Comment ça marche</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/contact" className="cursor-pointer">
-                        <MessageCircle className="mr-2 h-4 w-4" />
-                        <span>Contacter le service client</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/legal" className="cursor-pointer">
-                        <Info className="mr-2 h-4 w-4" />
-                        <span>Informations légales</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/insurance" className="cursor-pointer">
-                        <Shield className="mr-2 h-4 w-4" />
-                        <span>Assurance et protection</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            {/* Bouton Menu Mobile */}
-            <div className="md:hidden">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsOpen(!isOpen)}
-                className="p-2"
-              >
-                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </Button>
-            </div>
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
           </div>
         </div>
-      </nav>
-
-      {/* Barre de recherche */}
-      {location.pathname === "/" && (
-        <div className="bg-gradient-to-r from-primary/5 to-transparent py-4">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <SearchBar />
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* Menu Mobile */}
       {isOpen && (
@@ -228,7 +214,7 @@ const Navbar = () => {
           </div>
         </div>
       )}
-    </div>
+    </nav>
   );
 };
 
