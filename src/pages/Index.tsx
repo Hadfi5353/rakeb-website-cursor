@@ -1,3 +1,4 @@
+
 import Navbar from "@/components/Navbar";
 import SearchBar from "@/components/SearchBar";
 import HowItWorks from "@/components/HowItWorks";
@@ -8,7 +9,7 @@ import Stats from "@/components/Stats";
 import FAQ from "@/components/FAQ";
 import FloatingCTA from "@/components/FloatingCTA";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Shield, Star, MessageCircle } from "lucide-react";
 
 const Index = () => {
   return (
