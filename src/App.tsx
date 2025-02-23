@@ -20,28 +20,30 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <div className="min-h-screen flex flex-col">
-          <Navbar />
-          <main className="flex-1 pt-16">
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth/login" element={<Login />} />
-              <Route path="/auth/register" element={<Register />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/cars/:id" element={<CarDetail />} />
-              <Route path="/cars/add" element={<AddCar />} />
-              <Route path="/dashboard/owner" element={<OwnerDashboard />} />
-              <Route path="/dashboard/renter" element={<RenterDashboard />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-        </div>
-        <Toaster />
-        <Sonner />
-      </TooltipProvider>
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <TooltipProvider>
+          <div className="min-h-screen flex flex-col">
+            <Navbar />
+            <main className="flex-1 pt-16">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth/login" element={<Login />} />
+                <Route path="/auth/register" element={<Register />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/cars/:id" element={<CarDetail />} />
+                <Route path="/cars/add" element={<AddCar />} />
+                <Route path="/dashboard/owner" element={<OwnerDashboard />} />
+                <Route path="/dashboard/renter" element={<RenterDashboard />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+          </div>
+          <Toaster />
+          <Sonner />
+        </TooltipProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 
