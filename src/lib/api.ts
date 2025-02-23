@@ -10,7 +10,7 @@ export const vehiclesApi = {
       .order('created_at', { ascending: false });
       
     if (error) throw error;
-    return data;
+    return data as Vehicle[];
   },
 
   async getVehicle(id: string) {
@@ -21,18 +21,22 @@ export const vehiclesApi = {
       .single();
       
     if (error) throw error;
-    return data;
+    return data as Vehicle;
   },
 
   async createVehicle(vehicle: Omit<Vehicle, 'id' | 'created_at' | 'owner_id'>) {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) throw new Error("User not authenticated");
+
     const { data, error } = await supabase
       .from('vehicles')
-      .insert([{ ...vehicle, owner_id: supabase.auth.getUser() }])
+      .insert([{ ...vehicle, owner_id: user.id }])
       .select()
       .single();
       
     if (error) throw error;
-    return data;
+    return data as Vehicle;
   },
 
   async updateVehicle(id: string, vehicle: Partial<Vehicle>) {
@@ -44,7 +48,7 @@ export const vehiclesApi = {
       .single();
       
     if (error) throw error;
-    return data;
+    return data as Vehicle;
   },
 
   async deleteVehicle(id: string) {
