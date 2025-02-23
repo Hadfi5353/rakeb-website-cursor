@@ -1,10 +1,11 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Mail, User, Lock } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -14,11 +15,22 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
+  const { signUp } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Ici viendra la logique d'inscription
-    console.log("Form submitted:", formData);
+    if (formData.password !== formData.confirmPassword) {
+      console.error("Les mots de passe ne correspondent pas");
+      return;
+    }
+    
+    try {
+      await signUp(formData.email, formData.password, formData.firstName, formData.lastName);
+      navigate("/auth/login");
+    } catch (error) {
+      console.error("Erreur lors de l'inscription:", error);
+    }
   };
 
   return (
