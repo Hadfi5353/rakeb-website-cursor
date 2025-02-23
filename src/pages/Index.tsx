@@ -3,6 +3,11 @@ import Navbar from "@/components/Navbar";
 import SearchBar from "@/components/SearchBar";
 import HowItWorks from "@/components/HowItWorks";
 import PopularCars from "@/components/PopularCars";
+import WhyChooseUs from "@/components/WhyChooseUs";
+import Testimonials from "@/components/Testimonials";
+import Stats from "@/components/Stats";
+import FAQ from "@/components/FAQ";
+import FloatingCTA from "@/components/FloatingCTA";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
@@ -38,7 +43,11 @@ const Index = () => {
       {/* Main Content */}
       <main>
         <HowItWorks />
+        <Stats />
         <PopularCars />
+        <WhyChooseUs />
+        <Testimonials />
+        <FAQ />
       </main>
 
       {/* Footer */}
@@ -83,6 +92,8 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      <FloatingCTA />
     </div>
   );
 };
