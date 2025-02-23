@@ -9,7 +9,7 @@ import {
   MessageCircle, 
   Shield, 
   Info, 
-  Settings,
+  Tool,
   LogIn,
   UserPlus,
   HelpCircle
@@ -85,7 +85,7 @@ const Navbar = () => {
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link to="/tools" className="cursor-pointer">
-                        <Settings className="mr-2 h-4 w-4" />
+                        <Tool className="mr-2 h-4 w-4" />
                         <span>Outils pour les hôtes</span>
                       </Link>
                     </DropdownMenuItem>
@@ -173,26 +173,11 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Hero section avec image d'arrière-plan */}
+      {/* Barre de recherche */}
       {location.pathname === "/" && (
-        <div 
-          className="relative py-24 bg-cover bg-center min-h-[600px] flex items-center"
-          style={{
-            backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url('/background-hero.jpg')"
-          }}
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            <div className="text-center text-white mb-12">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                Trouvez la voiture parfaite<br />pour votre prochain voyage
-              </h1>
-              <p className="text-xl sm:text-2xl text-white/90 font-light">
-                Location de voitures entre particuliers partout au Maroc
-              </p>
-            </div>
-            <div className="relative z-10">
-              <SearchBar />
-            </div>
+        <div className="bg-gradient-to-r from-primary/5 to-transparent py-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SearchBar />
           </div>
         </div>
       )}
@@ -236,7 +221,7 @@ const Navbar = () => {
                       <Car className="w-5 h-5 text-gray-500" />
                       <span className="font-medium">Devenir Hôte</span>
                     </Link>
-                    {/* Autres liens du menu mobile */}
+                    {/* ... Autres liens du menu mobile */}
                   </nav>
                 </div>
               </div>
