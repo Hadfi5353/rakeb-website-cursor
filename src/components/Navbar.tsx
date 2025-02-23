@@ -9,7 +9,7 @@ import {
   MessageCircle, 
   Shield, 
   Info, 
-  Tool,
+  Settings,
   LogIn,
   UserPlus,
   HelpCircle
@@ -85,7 +85,7 @@ const Navbar = () => {
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link to="/tools" className="cursor-pointer">
-                        <Tool className="mr-2 h-4 w-4" />
+                        <Settings className="mr-2 h-4 w-4" />
                         <span>Outils pour les hôtes</span>
                       </Link>
                     </DropdownMenuItem>
@@ -173,10 +173,23 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Barre de recherche */}
+      {/* Hero section avec image d'arrière-plan */}
       {location.pathname === "/" && (
-        <div className="bg-gradient-to-r from-primary/5 to-transparent py-4">
+        <div 
+          className="relative py-20 bg-cover bg-center"
+          style={{
+            backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/background-hero.jpg')"
+          }}
+        >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center text-white mb-8">
+              <h1 className="text-4xl sm:text-5xl font-bold mb-4">
+                Trouvez la voiture parfaite pour votre prochain voyage
+              </h1>
+              <p className="text-xl opacity-90">
+                Location de voitures entre particuliers partout au Maroc
+              </p>
+            </div>
             <SearchBar />
           </div>
         </div>
@@ -221,7 +234,7 @@ const Navbar = () => {
                       <Car className="w-5 h-5 text-gray-500" />
                       <span className="font-medium">Devenir Hôte</span>
                     </Link>
-                    {/* ... Autres liens du menu mobile */}
+                    {/* Autres liens du menu mobile */}
                   </nav>
                 </div>
               </div>
