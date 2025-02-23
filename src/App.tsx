@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import Profile from "./pages/profile/Profile";
 import CarDetail from "./pages/cars/CarDetail";
 import AddCar from "./pages/cars/AddCar";
 import NotFound from "./pages/NotFound";
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth/login" element={<Login />} />
             <Route path="/auth/register" element={<Register />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/cars/:id" element={<CarDetail />} />
             <Route path="/cars/add" element={<AddCar />} />
             <Route path="*" element={<NotFound />} />
