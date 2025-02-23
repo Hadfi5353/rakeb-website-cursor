@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, Car, Search, User, LogOut } from "lucide-react";
+import { Menu, X, Car, User, Shield, MessageCircle, Search, Star, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -16,77 +16,85 @@ const Navbar = () => {
     navigate("/");
   };
 
-  const isActive = (path: string) => {
-    return location.pathname === path ? "text-primary font-medium" : "text-gray-600";
-  };
+  const mainNavItems = [
+    { label: "Explorer", href: "/explorer", icon: Search },
+    { label: "Offres", href: "/offres", icon: Star },
+    { label: "Sécurité", href: "/securite", icon: Shield },
+    { label: "FAQ", href: "/faq", icon: HelpCircle },
+    { label: "Contact", href: "/contact", icon: MessageCircle },
+  ];
 
   return (
-    <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-md z-50 border-b border-gray-100">
+    <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-md z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          <div className="flex items-center">
+          {/* Logo */}
+          <div className="flex-shrink-0 flex items-center">
             <Link 
               to="/" 
-              className="flex items-center space-x-2 text-2xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+              className="flex items-center space-x-2 text-2xl font-bold text-gray-900"
             >
               <Car className="h-8 w-8 text-primary" />
-              <span>Rakeb</span>
+              <span className="bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+                Rakeb
+              </span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:space-x-8">
-            <a 
-              href="#how-it-works" 
-              className={`${isActive('/#how-it-works')} hover:text-primary transition-colors py-2`}
-            >
-              Comment ça marche
-            </a>
-            <a 
-              href="#popular" 
-              className={`${isActive('/#popular')} hover:text-primary transition-colors py-2`}
-            >
-              Véhicules populaires
-            </a>
-            {user ? (
-              <div className="flex items-center space-x-4">
-                <Link to="/cars/add">
-                  <Button variant="outline" size="sm" className="border-primary hover:bg-primary hover:text-white">
-                    <Car className="w-4 h-4 mr-2" />
-                    Mettre en location
-                  </Button>
+            {/* Main Navigation Items */}
+            <div className="flex space-x-6">
+              {mainNavItems.map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  className="flex items-center space-x-1 text-gray-600 hover:text-primary transition-colors px-2 py-1 rounded-md text-sm font-medium"
+                >
+                  <item.icon className="w-4 h-4" />
+                  <span>{item.label}</span>
                 </Link>
-                <div className="h-6 w-px bg-gray-200" />
-                <Link to="/profile">
-                  <Button variant="ghost" size="sm" className="text-gray-600 hover:text-primary">
-                    <User className="w-4 h-4 mr-2" />
-                    Mon Profil
-                  </Button>
-                </Link>
-                <Button onClick={handleSignOut} variant="ghost" size="sm" className="text-gray-600 hover:text-destructive">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Se déconnecter
+              ))}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center space-x-4">
+              <Link to="/cars/add">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="border-primary text-primary hover:bg-primary hover:text-white transition-colors duration-200"
+                >
+                  <Car className="w-4 h-4 mr-2" />
+                  Devenir propriétaire
                 </Button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
-                <Link to="/cars/add">
-                  <Button variant="outline" size="sm" className="border-primary hover:bg-primary hover:text-white">
-                    <Car className="w-4 h-4 mr-2" />
-                    Mettre en location
-                  </Button>
-                </Link>
+              </Link>
+
+              {user ? (
+                <Button 
+                  onClick={handleSignOut}
+                  variant="ghost" 
+                  size="sm"
+                  className="text-gray-600 hover:text-primary"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Mon compte
+                </Button>
+              ) : (
                 <Link to="/auth/login">
-                  <Button size="sm" className="bg-primary hover:bg-primary-dark text-white">
+                  <Button 
+                    size="sm"
+                    className="bg-primary hover:bg-primary-dark text-white"
+                  >
                     <User className="w-4 h-4 mr-2" />
                     Se connecter
                   </Button>
                 </Link>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
-          {/* Mobile Navigation Button */}
+          {/* Mobile menu button */}
           <div className="flex items-center md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -98,67 +106,52 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Navigation Menu */}
+      {/* Mobile menu */}
       {isOpen && (
-        <div className="md:hidden animate-slideIn">
-          <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-b border-gray-100">
-            <a
-              href="#how-it-works"
-              className="block px-3 py-2 rounded-md text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              Comment ça marche
-            </a>
-            <a
-              href="#popular"
-              className="block px-3 py-2 rounded-md text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              Véhicules populaires
-            </a>
+        <div className="md:hidden">
+          <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-b border-gray-200">
+            {mainNavItems.map((item) => (
+              <Link
+                key={item.label}
+                to={item.href}
+                className="flex items-center space-x-2 px-3 py-2 rounded-md text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors text-base font-medium"
+                onClick={() => setIsOpen(false)}
+              >
+                <item.icon className="w-5 h-5" />
+                <span>{item.label}</span>
+              </Link>
+            ))}
+
             <div className="pt-4 pb-3 border-t border-gray-200">
-              {user ? (
-                <div className="space-y-2 px-3">
-                  <Link to="/cars/add" onClick={() => setIsOpen(false)}>
-                    <Button variant="outline" className="w-full border-primary hover:bg-primary hover:text-white">
-                      <Car className="w-4 h-4 mr-2" />
-                      Mettre en location
-                    </Button>
-                  </Link>
-                  <Link to="/profile" onClick={() => setIsOpen(false)}>
-                    <Button variant="ghost" className="w-full text-gray-600 hover:text-primary">
-                      <User className="w-4 h-4 mr-2" />
-                      Mon Profil
-                    </Button>
-                  </Link>
-                  <Button 
+              <div className="space-y-2 px-3">
+                <Link to="/cars/add" onClick={() => setIsOpen(false)} className="block">
+                  <Button variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-white">
+                    <Car className="w-4 h-4 mr-2" />
+                    Devenir propriétaire
+                  </Button>
+                </Link>
+
+                {user ? (
+                  <Button
                     onClick={() => {
                       handleSignOut();
                       setIsOpen(false);
-                    }} 
-                    variant="ghost" 
-                    className="w-full text-gray-600 hover:text-destructive"
+                    }}
+                    variant="ghost"
+                    className="w-full text-gray-600 hover:text-primary"
                   >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Se déconnecter
+                    <User className="w-4 h-4 mr-2" />
+                    Mon compte
                   </Button>
-                </div>
-              ) : (
-                <div className="space-y-2 px-3">
-                  <Link to="/cars/add" onClick={() => setIsOpen(false)}>
-                    <Button variant="outline" className="w-full border-primary hover:bg-primary hover:text-white">
-                      <Car className="w-4 h-4 mr-2" />
-                      Mettre en location
-                    </Button>
-                  </Link>
-                  <Link to="/auth/login" onClick={() => setIsOpen(false)}>
-                    <Button className="w-full bg-primary hover:bg-primary-dark">
+                ) : (
+                  <Link to="/auth/login" onClick={() => setIsOpen(false)} className="block">
+                    <Button className="w-full bg-primary hover:bg-primary-dark text-white">
                       <User className="w-4 h-4 mr-2" />
                       Se connecter
                     </Button>
                   </Link>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>
