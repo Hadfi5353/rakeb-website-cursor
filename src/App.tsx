@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import CarDetail from "./pages/cars/CarDetail";
+import AddCar from "./pages/cars/AddCar";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/register" element={<Register />} />
           <Route path="/cars/:id" element={<CarDetail />} />
+          <Route path="/cars/add" element={<AddCar />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
