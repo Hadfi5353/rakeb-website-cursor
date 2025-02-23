@@ -20,13 +20,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast()
 
   useEffect(() => {
-    // Vérifier l'état de la session au chargement
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
       setLoading(false)
     })
 
-    // Écouter les changements d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
     })
@@ -36,7 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -47,13 +45,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         },
       })
 
-      if (error) throw error
+      if (error) {
+        // Gérer les erreurs spécifiques
+        let errorMessage = "Une erreur est survenue lors de l'inscription"
+        
+        if (error.message.includes('Email already registered')) {
+          errorMessage = "Cette adresse email est déjà utilisée"
+        } else if (error.message.includes('Password')) {
+          errorMessage = "Le mot de passe doit contenir au moins 6 caractères"
+        }
+        
+        toast({
+          variant: "destructive",
+          title: "Erreur lors de l'inscription",
+          description: errorMessage,
+        })
+        throw error
+      }
 
-      toast({
-        title: "Inscription réussie",
-        description: "Un email de confirmation vous a été envoyé.",
-      })
+      if (data.user) {
+        toast({
+          title: "Inscription réussie",
+          description: "Un email de confirmation vous a été envoyé.",
+        })
+      }
     } catch (error) {
+      console.error("Erreur lors de l'inscription:", error)
       toast({
         variant: "destructive",
         title: "Erreur lors de l'inscription",
@@ -65,18 +82,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      if (error) throw error
+      if (error) {
+        let errorMessage = "Une erreur est survenue lors de la connexion"
+        
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = "Email ou mot de passe incorrect"
+        }
+        
+        toast({
+          variant: "destructive",
+          title: "Erreur lors de la connexion",
+          description: errorMessage,
+        })
+        throw error
+      }
 
-      toast({
-        title: "Connexion réussie",
-        description: "Bienvenue sur Rakeb !",
-      })
+      if (data.user) {
+        toast({
+          title: "Connexion réussie",
+          description: "Bienvenue sur Rakeb !",
+        })
+      }
     } catch (error) {
+      console.error("Erreur lors de la connexion:", error)
       toast({
         variant: "destructive",
         title: "Erreur lors de la connexion",
@@ -89,12 +122,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut()
-      if (error) throw error
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Erreur lors de la déconnexion",
+          description: error.message,
+        })
+        throw error
+      }
       toast({
         title: "Déconnexion réussie",
         description: "À bientôt sur Rakeb !",
       })
     } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error)
       toast({
         variant: "destructive",
         title: "Erreur lors de la déconnexion",
