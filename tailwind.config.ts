@@ -26,11 +26,19 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#10b981",
+          DEFAULT: "#10b981", // Vert émeraude
+          light: "#34d399", // Version plus claire pour les hovers
+          dark: "#059669", // Version plus foncée pour les accents
           foreground: "#ffffff",
         },
         secondary: {
-          DEFAULT: "#f97316",
+          DEFAULT: "#3b82f6", // Bleu professionnel
+          light: "#60a5fa",
+          dark: "#2563eb",
+          foreground: "#ffffff",
+        },
+        success: {
+          DEFAULT: "#10b981",
           foreground: "#ffffff",
         },
         destructive: {
@@ -38,26 +46,30 @@ export default {
           foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: "#f3f4f6",
+          foreground: "#6b7280",
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: "#f9fafb",
+          foreground: "#111827",
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: "#ffffff",
+          foreground: "#111827",
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          DEFAULT: "#ffffff",
+          foreground: "#111827",
         },
       },
+      boxShadow: {
+        'soft': '0 2px 15px rgba(0, 0, 0, 0.05)',
+        'medium': '0 4px 20px rgba(0, 0, 0, 0.08)',
+      },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "0.625rem",
+        md: "0.5rem",
+        sm: "0.375rem",
       },
       keyframes: {
         "accordion-down": {
@@ -72,11 +84,16 @@ export default {
           "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        slideIn: {
+          "0%": { transform: "translateX(-10px)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         fadeIn: "fadeIn 0.5s ease-out forwards",
+        slideIn: "slideIn 0.5s ease-out forwards",
       },
     },
   },
