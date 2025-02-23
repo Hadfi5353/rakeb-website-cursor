@@ -1,6 +1,5 @@
 
 import Navbar from "@/components/Navbar";
-import SearchBar from "@/components/SearchBar";
 import HowItWorks from "@/components/HowItWorks";
 import PopularCars from "@/components/PopularCars";
 import WhyChooseUs from "@/components/WhyChooseUs";
@@ -17,7 +16,7 @@ const Index = () => {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="pt-32 pb-16 px-4 bg-gradient-to-b from-primary/5 to-transparent">
+      <section className="pt-32 pb-16 px-4">
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 animate-fadeIn">
             Trouvez votre voiture idéale<br />en 3 clics
@@ -26,10 +25,6 @@ const Index = () => {
             Location de voitures simple, sécurisée et économique au Maroc.<br />
             Réservez auprès de propriétaires vérifiés.
           </p>
-
-          <div className="animate-fadeIn" style={{ animationDelay: "400ms" }}>
-            <SearchBar />
-          </div>
 
           <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fadeIn" style={{ animationDelay: "600ms" }}>
             <Button size="lg" variant="outline" className="group">
