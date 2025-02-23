@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 
 const SearchBar = () => {
   return (
-    <div className="w-full max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-1 sm:p-2 flex flex-col sm:flex-row gap-2">
+    <div className="w-full bg-white rounded-xl shadow-lg p-2 sm:p-3 flex flex-col sm:flex-row gap-2">
       <div className="flex-1 flex items-center gap-2 p-3 hover:bg-gray-50 rounded-md transition-colors">
-        <MapPin className="text-gray-400" size={20} />
+        <MapPin className="text-gray-400 flex-shrink-0" size={20} />
         <input
           type="text"
           placeholder="Où souhaitez-vous louer ?"
@@ -15,7 +15,7 @@ const SearchBar = () => {
       </div>
       
       <div className="flex-1 flex items-center gap-2 p-3 hover:bg-gray-50 rounded-md transition-colors">
-        <CalendarDays className="text-gray-400" size={20} />
+        <CalendarDays className="text-gray-400 flex-shrink-0" size={20} />
         <input
           type="text"
           placeholder="Quand souhaitez-vous louer ?"
@@ -23,7 +23,7 @@ const SearchBar = () => {
         />
       </div>
       
-      <Button className="w-full sm:w-auto px-8 py-6">
+      <Button className="w-full sm:w-auto px-6 py-6">
         <Search className="mr-2" size={20} />
         Rechercher
       </Button>

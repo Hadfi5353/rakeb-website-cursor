@@ -27,21 +27,21 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="fixed w-full z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-200">
+    <nav className="fixed w-full z-50 bg-white/95 backdrop-blur-md shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo à gauche */}
+          {/* Logo */}
           <Link 
             to="/" 
-            className="flex items-center space-x-2 text-2xl font-bold"
+            className="flex items-center space-x-2 text-xl sm:text-2xl font-bold"
           >
-            <Car className="h-8 w-8 text-primary" />
+            <Car className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
             <span className="bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
               Rakeb
             </span>
           </Link>
 
-          {/* Menu Desktop à droite */}
+          {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-4">
             <Link to="/cars/add">
               <Button 
@@ -119,27 +119,33 @@ const Navbar = () => {
             </DropdownMenu>
           </div>
 
-          {/* Menu Mobile */}
+          {/* Mobile Menu Button */}
           <div className="md:hidden">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2"
+              className="p-1"
             >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isOpen ? 
+                <X className="h-6 w-6 text-gray-600" /> : 
+                <Menu className="h-6 w-6 text-gray-600" />
+              }
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Menu Mobile Overlay */}
+      {/* Mobile Menu */}
       {isOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
-          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
+          <div 
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm"
+            onClick={() => setIsOpen(false)}
+          />
           <div className="fixed inset-y-0 right-0 w-full max-w-xs bg-white shadow-xl">
             <div className="flex flex-col h-full">
-              <div className="pt-16 px-6 pb-6 space-y-4">
+              <div className="pt-20 px-6 pb-6 space-y-4">
                 <Link to="/cars/add" onClick={() => setIsOpen(false)}>
                   <Button className="w-full" variant="outline">
                     <Car className="w-4 h-4 mr-2" />
