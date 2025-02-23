@@ -3,11 +3,12 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/components/ui/use-toast'
+import { UserRole } from '@/types/user'
 
 interface AuthContextType {
   user: User | null
   loading: boolean
-  signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<void>
+  signUp: (email: string, password: string, firstName: string, lastName: string, role: UserRole) => Promise<void>
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
 }
@@ -32,7 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe()
   }, [])
 
-  const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
+  const signUp = async (email: string, password: string, firstName: string, lastName: string, role: UserRole) => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -41,12 +42,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           data: {
             first_name: firstName,
             last_name: lastName,
+            role: role,
           },
         },
       })
 
       if (error) {
-        // Gérer les erreurs spécifiques
         let errorMessage = "Une erreur est survenue lors de l'inscription"
         
         if (error.message.includes('Email already registered')) {

@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Mail, User, Lock } from "lucide-react";
+import { ArrowLeft, Mail, User, Lock, Car, Search } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -15,6 +15,7 @@ const Register = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "renter" as "renter" | "owner",
   });
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
@@ -59,7 +60,7 @@ const Register = () => {
     
     setIsLoading(true);
     try {
-      await signUp(formData.email, formData.password, formData.firstName, formData.lastName);
+      await signUp(formData.email, formData.password, formData.firstName, formData.lastName, formData.role);
       navigate("/auth/login");
     } catch (error) {
       console.error("Erreur lors de l'inscription:", error);
@@ -189,6 +190,30 @@ const Register = () => {
                     required
                     disabled={isLoading}
                   />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Je suis un</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <Button
+                    type="button"
+                    variant={formData.role === "renter" ? "default" : "outline"}
+                    onClick={() => setFormData({ ...formData, role: "renter" })}
+                    className="w-full"
+                  >
+                    <Search className="w-4 h-4 mr-2" />
+                    Locataire
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={formData.role === "owner" ? "default" : "outline"}
+                    onClick={() => setFormData({ ...formData, role: "owner" })}
+                    className="w-full"
+                  >
+                    <Car className="w-4 h-4 mr-2" />
+                    Propriétaire
+                  </Button>
                 </div>
               </div>
 
