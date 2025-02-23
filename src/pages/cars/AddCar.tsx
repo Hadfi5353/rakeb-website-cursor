@@ -1,9 +1,10 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
 import { 
   Select,
   SelectContent,
@@ -13,9 +14,16 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Upload, Car, MapPin, DollarSign } from "lucide-react";
+import { vehiclesApi } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AddCar = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { user } = useAuth();
+
   const [formData, setFormData] = useState({
+    name: "",
     brand: "",
     model: "",
     year: "",
@@ -26,10 +34,48 @@ const AddCar = () => {
     fuel: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Ici viendra la logique d'ajout
-    console.log("Form submitted:", formData);
+
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Vous devez être connecté pour ajouter un véhicule",
+      });
+      navigate("/auth/login");
+      return;
+    }
+
+    try {
+      const vehicleData = {
+        name: `${formData.brand} ${formData.model} ${formData.year}`,
+        brand: formData.brand,
+        model: formData.model,
+        year: parseInt(formData.year),
+        price: parseFloat(formData.price),
+        location: formData.location,
+        description: formData.description,
+        transmission: formData.transmission as "manual" | "automatic",
+        fuel: formData.fuel as "diesel" | "essence" | "hybrid" | "electric",
+      };
+
+      await vehiclesApi.createVehicle(vehicleData);
+
+      toast({
+        title: "Succès",
+        description: "Votre véhicule a été ajouté avec succès",
+      });
+
+      navigate("/");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'ajout du véhicule",
+      });
+      console.error("Error creating vehicle:", error);
+    }
   };
 
   return (
