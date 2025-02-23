@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Mail, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/components/ui/use-toast";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -14,27 +13,24 @@ const Login = () => {
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, getUserRole } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validation basique
-    if (!formData.email || !formData.password) {
-      toast({
-        variant: "destructive",
-        title: "Erreur de validation",
-        description: "Veuillez remplir tous les champs",
-      });
-      return;
-    }
-
     setIsLoading(true);
+    
     try {
       await signIn(formData.email, formData.password);
-      navigate("/");
+      const role = await getUserRole();
+      
+      if (role === 'owner') {
+        navigate('/dashboard/owner');
+      } else if (role === 'renter') {
+        navigate('/dashboard/renter');
+      } else {
+        navigate('/profile');
+      }
     } catch (error) {
       console.error("Erreur lors de la connexion:", error);
     } finally {
@@ -51,11 +47,11 @@ const Login = () => {
         </Link>
         
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Connexion</h2>
+          <h2 className="text-3xl font-bold text-gray-900">Connectez-vous</h2>
           <p className="mt-2 text-gray-600">
             Pas encore inscrit ?{" "}
             <Link to="/auth/register" className="text-primary hover:text-primary-dark transition-colors">
-              Créez un compte
+              Créer un compte
             </Link>
           </p>
         </div>
@@ -64,7 +60,7 @@ const Login = () => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <Card>
           <CardHeader>
-            <CardTitle>Connectez-vous</CardTitle>
+            <CardTitle>Connexion</CardTitle>
             <CardDescription>
               Entrez vos identifiants pour accéder à votre compte
             </CardDescription>
@@ -105,11 +101,6 @@ const Login = () => {
                     required
                     disabled={isLoading}
                   />
-                </div>
-                <div className="flex items-center justify-end">
-                  <Link to="/auth/forgot-password" className="text-sm text-primary hover:text-primary-dark transition-colors">
-                    Mot de passe oublié ?
-                  </Link>
                 </div>
               </div>
 

@@ -11,6 +11,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, firstName: string, lastName: string, role: UserRole) => Promise<void>
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
+  getUserRole: () => Promise<UserRole | null>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -32,6 +33,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => subscription.unsubscribe()
   }, [])
+
+  const getUserRole = async (): Promise<UserRole | null> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return null
+      return user.user_metadata?.role as UserRole || null
+    } catch (error) {
+      console.error("Erreur lors de la récupération du rôle:", error)
+      return null
+    }
+  }
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string, role: UserRole) => {
     try {
@@ -104,9 +116,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       if (data.user) {
+        const role = data.user.user_metadata?.role as UserRole
         toast({
           title: "Connexion réussie",
-          description: "Bienvenue sur Rakeb !",
+          description: `Bienvenue sur Rakeb ${data.user.user_metadata?.first_name}!`,
         })
       }
     } catch (error) {
@@ -152,6 +165,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signUp,
     signIn,
     signOut,
+    getUserRole,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
