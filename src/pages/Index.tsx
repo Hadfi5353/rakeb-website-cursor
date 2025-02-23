@@ -1,4 +1,3 @@
-
 import Navbar from "@/components/Navbar";
 import SearchBar from "@/components/SearchBar";
 import HowItWorks from "@/components/HowItWorks";
@@ -8,8 +7,7 @@ import Testimonials from "@/components/Testimonials";
 import Stats from "@/components/Stats";
 import FAQ from "@/components/FAQ";
 import FloatingCTA from "@/components/FloatingCTA";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Shield, Star, MessageCircle } from "lucide-react";
+import { Shield, Star, MessageCircle } from "lucide-react";
 
 const Index = () => {
   return (
@@ -29,26 +27,6 @@ const Index = () => {
 
           <div className="animate-fadeIn" style={{ animationDelay: "400ms" }}>
             <SearchBar />
-          </div>
-
-          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fadeIn" style={{ animationDelay: "600ms" }}>
-            <Button size="lg" variant="outline" className="group">
-              Mettre ma voiture en location
-              <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <div className="flex items-center space-x-2">
-              <div className="flex -space-x-2">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="w-8 h-8 rounded-full border-2 border-white bg-gray-200"
-                  />
-                ))}
-              </div>
-              <p className="text-sm text-gray-500">
-                Plus de 1000 propriétaires nous font confiance
-              </p>
-            </div>
           </div>
 
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
