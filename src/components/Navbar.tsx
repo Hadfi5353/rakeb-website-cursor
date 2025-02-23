@@ -9,7 +9,7 @@ import {
   MessageCircle, 
   Shield, 
   Info, 
-  Tool,
+  Settings,
   LogIn,
   UserPlus,
   HelpCircle
@@ -85,7 +85,7 @@ const Navbar = () => {
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link to="/tools" className="cursor-pointer">
-                        <Tool className="mr-2 h-4 w-4" />
+                        <Settings className="mr-2 h-4 w-4" />
                         <span>Outils pour les hôtes</span>
                       </Link>
                     </DropdownMenuItem>
@@ -221,7 +221,6 @@ const Navbar = () => {
                       <Car className="w-5 h-5 text-gray-500" />
                       <span className="font-medium">Devenir Hôte</span>
                     </Link>
-                    {/* ... Autres liens du menu mobile */}
                   </nav>
                 </div>
               </div>
