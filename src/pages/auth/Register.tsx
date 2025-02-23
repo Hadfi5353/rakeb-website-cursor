@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Mail, User, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -15,21 +16,55 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const validateForm = () => {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Erreur de validation",
+        description: "Veuillez remplir tous les champs",
+      });
+      return false;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        variant: "destructive",
+        title: "Erreur de validation",
+        description: "Le mot de passe doit contenir au moins 6 caractères",
+      });
+      return false;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Erreur de validation",
+        description: "Les mots de passe ne correspondent pas",
+      });
+      return false;
+    }
+
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      console.error("Les mots de passe ne correspondent pas");
-      return;
-    }
     
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
     try {
       await signUp(formData.email, formData.password, formData.firstName, formData.lastName);
       navigate("/auth/login");
     } catch (error) {
       console.error("Erreur lors de l'inscription:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -77,6 +112,7 @@ const Register = () => {
                       value={formData.firstName}
                       onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                       required
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -95,6 +131,7 @@ const Register = () => {
                       value={formData.lastName}
                       onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                       required
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -114,6 +151,7 @@ const Register = () => {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -131,6 +169,7 @@ const Register = () => {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -148,12 +187,13 @@ const Register = () => {
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
 
-              <Button type="submit" className="w-full">
-                S'inscrire
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Inscription en cours..." : "S'inscrire"}
               </Button>
             </form>
           </CardContent>

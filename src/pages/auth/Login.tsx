@@ -6,22 +6,39 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Mail, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validation basique
+    if (!formData.email || !formData.password) {
+      toast({
+        variant: "destructive",
+        title: "Erreur de validation",
+        description: "Veuillez remplir tous les champs",
+      });
+      return;
+    }
+
+    setIsLoading(true);
     try {
       await signIn(formData.email, formData.password);
       navigate("/");
     } catch (error) {
       console.error("Erreur lors de la connexion:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -68,6 +85,7 @@ const Login = () => {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -85,6 +103,7 @@ const Login = () => {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div className="flex items-center justify-end">
@@ -94,8 +113,8 @@ const Login = () => {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full">
-                Se connecter
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Connexion en cours..." : "Se connecter"}
               </Button>
             </form>
           </CardContent>
