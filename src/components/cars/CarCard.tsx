@@ -2,6 +2,7 @@
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Star, User, Calendar, Shield } from "lucide-react";
+import SocialShare from "./SocialShare";
 
 interface CarCardProps {
   car: {
@@ -21,11 +22,16 @@ const CarCard = ({ car, onReserve }: CarCardProps) => {
   return (
     <Card className="overflow-hidden hover:shadow-medium transition-all duration-300">
       <CardHeader className="p-0">
-        <img
-          src={car.image}
-          alt={car.name}
-          className="w-full h-48 object-cover"
-        />
+        <div className="relative">
+          <img
+            src={car.image}
+            alt={car.name}
+            className="w-full h-48 object-cover"
+          />
+          <div className="absolute top-4 right-4">
+            <SocialShare car={car} className="bg-white/90 backdrop-blur-sm hover:bg-white" />
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="p-6">
         <div className="flex justify-between items-start mb-4">
