@@ -33,7 +33,7 @@ const AdvancedFilters = ({
             <SelectValue placeholder="Toutes" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Toutes</SelectItem>
+            <SelectItem value="all">Toutes</SelectItem>
             <SelectItem value="manual">Manuelle</SelectItem>
             <SelectItem value="automatic">Automatique</SelectItem>
           </SelectContent>
@@ -49,7 +49,7 @@ const AdvancedFilters = ({
             <SelectValue placeholder="Toutes les marques" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Toutes les marques</SelectItem>
+            <SelectItem value="all">Toutes les marques</SelectItem>
             {availableBrands.map(brand => (
               <SelectItem key={brand} value={brand}>{brand}</SelectItem>
             ))}

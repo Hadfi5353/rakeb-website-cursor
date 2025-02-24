@@ -132,11 +132,11 @@ const SearchResults = () => {
       );
     }
 
-    if (selectedBrand) {
+    if (selectedBrand && selectedBrand !== "all") {
       filtered = filtered.filter(v => v.brand === selectedBrand);
     }
 
-    if (selectedTransmission) {
+    if (selectedTransmission && selectedTransmission !== "all") {
       filtered = filtered.filter(v => v.transmission === selectedTransmission);
     }
 
