@@ -3,30 +3,17 @@ import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { vehiclesApi } from "@/lib/api";
 import { Vehicle } from "@/lib/types";
-import CarCard from "@/components/cars/CarCard";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
-import { 
-  SlidersHorizontal, 
-  Star, 
-  Map as MapIcon,
-  LayoutGrid,
-  Users,
-  Clock,
-  TrendingUp,
-  ShieldCheck,
-  Heart,
-  ChevronDown,
-  ChevronUp 
-} from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import CategoryButton from "@/components/cars/CategoryButton";
 import AdvancedFilters from "@/components/cars/AdvancedFilters";
-import MapPin from "@/components/ui/map-pin";
+import SearchResultsHeader from "@/components/cars/SearchResultsHeader";
+import SearchResultsGrid from "@/components/cars/SearchResultsGrid";
+import TrendsCard from "@/components/cars/TrendsCard";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
+import { SlidersHorizontal, Star, ChevronDown, ChevronUp } from "lucide-react";
 
 const carCategories = [
   "Toutes", "SUV", "Berline", "Sportive", "Luxe", "Électrique", "Familiale"
@@ -108,8 +95,8 @@ const SearchResults = () => {
   const [searchParams] = useSearchParams();
   const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([]);
   const [priceRange, setPriceRange] = useState([0, 1000]);
-  const [selectedBrand, setSelectedBrand] = useState("");
-  const [selectedTransmission, setSelectedTransmission] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState("all");
+  const [selectedTransmission, setSelectedTransmission] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("Toutes");
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
   const [minRating, setMinRating] = useState(0);
@@ -160,10 +147,6 @@ const SearchResults = () => {
     setFilteredVehicles(filtered);
   }, [searchParams, selectedBrand, selectedTransmission, selectedCategory, priceRange, minRating, showPremiumOnly]);
 
-  const addToFavorites = (carId: string) => {
-    toast.success("Véhicule ajouté aux favoris");
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-24">
@@ -189,40 +172,12 @@ const SearchResults = () => {
           <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl blur-xl" />
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-4">
-          <div className="space-y-1 w-full sm:w-auto">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
-              {filteredVehicles.length} véhicules trouvés
-            </h1>
-            {searchParams.get("location") && (
-              <p className="text-sm sm:text-base text-gray-600 flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                à {searchParams.get("location")}
-              </p>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm p-1 rounded-lg w-full sm:w-auto">
-            <Button
-              variant={viewMode === "grid" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setViewMode("grid")}
-              className="flex-1 sm:flex-none transition-all duration-300 hover:scale-105"
-            >
-              <LayoutGrid className="w-4 h-4" />
-              <span className="ml-2">Grille</span>
-            </Button>
-            <Button
-              variant={viewMode === "map" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setViewMode("map")}
-              className="flex-1 sm:flex-none transition-all duration-300 hover:scale-105"
-            >
-              <MapIcon className="w-4 h-4" />
-              <span className="ml-2">Carte</span>
-            </Button>
-          </div>
-        </div>
+        <SearchResultsHeader
+          count={filteredVehicles.length}
+          location={searchParams.get("location")}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+        />
 
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           <div className="w-full lg:w-64 space-y-6">
@@ -333,8 +288,8 @@ const SearchResults = () => {
                 variant="outline" 
                 className="w-full mt-6"
                 onClick={() => {
-                  setSelectedBrand("");
-                  setSelectedTransmission("");
+                  setSelectedBrand("all");
+                  setSelectedTransmission("all");
                   setSelectedCategory("Toutes");
                   setPriceRange([0, 1000]);
                   setMinRating(0);
@@ -345,66 +300,12 @@ const SearchResults = () => {
               </Button>
             </Card>
 
-            <Card className="p-4 sm:p-6 backdrop-blur-xl bg-white/80 border-0 shadow-lg space-y-4 hidden lg:block">
-              <h3 className="font-medium text-gray-900">Tendances actuelles</h3>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center gap-2 text-primary/90 bg-primary/5 p-3 rounded-lg transform hover:scale-[1.02] transition-all cursor-default">
-                  <Users className="w-4 h-4" />
-                  <span>12 personnes consultent cette recherche</span>
-                </div>
-                <div className="flex items-center gap-2 text-orange-500/90 bg-orange-500/5 p-3 rounded-lg transform hover:scale-[1.02] transition-all cursor-default">
-                  <Clock className="w-4 h-4" />
-                  <span>Dernière réservation il y a 5 min</span>
-                </div>
-                <div className="flex items-center gap-2 text-rose-500/90 bg-rose-500/5 p-3 rounded-lg transform hover:scale-[1.02] transition-all cursor-default">
-                  <TrendingUp className="w-4 h-4" />
-                  <span>Prix en hausse pour ces dates</span>
-                </div>
-              </div>
-            </Card>
+            <TrendsCard />
           </div>
 
           <div className="flex-1">
             {viewMode === "grid" ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {filteredVehicles.map((car) => (
-                  <div 
-                    key={car.id} 
-                    className="relative group transform hover:scale-[1.02] transition-all duration-300"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity -z-10" />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute top-2 right-2 z-10 bg-white/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
-                      onClick={() => addToFavorites(car.id)}
-                    >
-                      <Heart className="w-4 h-4" />
-                    </Button>
-                    
-                    {car.isPremium && (
-                      <div className="absolute top-2 left-2 z-10 bg-primary/90 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-                        <ShieldCheck className="w-3 h-3" />
-                        Premium
-                      </div>
-                    )}
-                    
-                    <CarCard
-                      car={{
-                        id: Number(car.id),
-                        name: `${car.brand} ${car.model} ${car.year}`,
-                        image: car.image_url || "/placeholder.svg",
-                        price: `${car.price}`,
-                        location: car.location,
-                        rating: car.rating,
-                        reviews: car.reviews_count,
-                        insurance: "Assurance tous risques incluse"
-                      }}
-                      onReserve={() => console.log("Réserver:", car)}
-                    />
-                  </div>
-                ))}
-              </div>
+              <SearchResultsGrid vehicles={filteredVehicles} />
             ) : (
               <div className="bg-white/80 backdrop-blur-xl rounded-xl h-[600px] flex items-center justify-center border-0 shadow-lg">
                 <p className="text-gray-500">Carte en cours de développement</p>
