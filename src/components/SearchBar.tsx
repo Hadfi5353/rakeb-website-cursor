@@ -1,7 +1,6 @@
 
 import { CalendarDays, MapPin, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import AdvancedSearch from "./cars/AdvancedSearch";
 
 const SearchBar = () => {
   return (
@@ -29,8 +28,7 @@ const SearchBar = () => {
           </div>
         </div>
         
-        <div className="flex items-center gap-2 p-4">
-          <AdvancedSearch />
+        <div className="flex items-center p-4">
           <Button className="bg-primary hover:bg-primary-dark">
             <Search className="mr-2" size={20} />
             <span>Rechercher</span>
