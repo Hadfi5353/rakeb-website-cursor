@@ -2,7 +2,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "./contexts/AuthContext";
-import Navbar from "./components/Navbar";
 
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
@@ -14,6 +13,7 @@ import RenterDashboard from "./pages/dashboard/RenterDashboard";
 import Profile from "./pages/profile/Profile";
 import AddCar from "./pages/cars/AddCar";
 import CarDetail from "./pages/cars/CarDetail";
+import SearchResults from "./pages/cars/SearchResults";
 import BecomeOwner from "./pages/owner/BecomeOwner";
 import HowItWorks from "./pages/how-it-works/HowItWorks";
 import Contact from "./pages/contact/Contact";
@@ -29,6 +29,7 @@ function App() {
         <div className="min-h-screen">
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/search" element={<SearchResults />} />
             <Route path="/auth/login" element={<Login />} />
             <Route path="/auth/register" element={<Register />} />
             <Route path="/auth/forgot-password" element={<ForgotPassword />} />
