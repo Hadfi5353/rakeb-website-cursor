@@ -30,6 +30,8 @@ const AddCar = () => {
     description: "",
     transmission: "",
     fuel: "",
+    longitude: 0, // Valeur par défaut pour Casablanca
+    latitude: 0,  // Valeur par défaut pour Casablanca
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,6 +58,8 @@ const AddCar = () => {
         description: formData.description,
         transmission: formData.transmission as "manual" | "automatic",
         fuel: formData.fuel as "diesel" | "essence" | "hybrid" | "electric",
+        longitude: formData.longitude,
+        latitude: formData.latitude,
       };
 
       await vehiclesApi.createVehicle(vehicleData);
