@@ -94,7 +94,7 @@ const HowItWorks = () => {
         <Card className="mb-16">
           <CardHeader>
             <CardTitle className="text-2xl text-center mb-6">
-              L'avantage de la location entre particuliers
+              Pourquoi choisir Rakeb ?
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -102,16 +102,16 @@ const HowItWorks = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-1/3">Caractéristiques</TableHead>
-                  <TableHead className="w-1/3 text-secondary">Rakeb</TableHead>
+                  <TableHead className="w-1/3 text-primary">Rakeb</TableHead>
                   <TableHead className="w-1/3">Agences traditionnelles</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 <TableRow>
                   <TableCell>Processus de réservation</TableCell>
-                  <TableCell className="text-secondary">
+                  <TableCell className="text-primary">
                     <div className="flex items-center gap-2">
-                      <Check className="text-secondary w-5 h-5" />
+                      <Check className="text-primary w-5 h-5" />
                       100% en ligne, simple et rapide
                     </div>
                   </TableCell>
@@ -124,9 +124,9 @@ const HowItWorks = () => {
                 </TableRow>
                 <TableRow>
                   <TableCell>Points de prise en charge</TableCell>
-                  <TableCell className="text-secondary">
+                  <TableCell className="text-primary">
                     <div className="flex items-center gap-2">
-                      <Check className="text-secondary w-5 h-5" />
+                      <Check className="text-primary w-5 h-5" />
                       Flexible, livraison possible
                     </div>
                   </TableCell>
@@ -139,9 +139,9 @@ const HowItWorks = () => {
                 </TableRow>
                 <TableRow>
                   <TableCell>Choix de véhicules</TableCell>
-                  <TableCell className="text-secondary">
+                  <TableCell className="text-primary">
                     <div className="flex items-center gap-2">
-                      <Check className="text-secondary w-5 h-5" />
+                      <Check className="text-primary w-5 h-5" />
                       Large choix de véhicules locaux
                     </div>
                   </TableCell>
@@ -154,9 +154,9 @@ const HowItWorks = () => {
                 </TableRow>
                 <TableRow>
                   <TableCell>Évaluations</TableCell>
-                  <TableCell className="text-secondary">
+                  <TableCell className="text-primary">
                     <div className="flex items-center gap-2">
-                      <Check className="text-secondary w-5 h-5" />
+                      <Check className="text-primary w-5 h-5" />
                       Avis détaillés des utilisateurs
                     </div>
                   </TableCell>
