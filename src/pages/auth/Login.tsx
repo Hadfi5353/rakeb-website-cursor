@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Mail, Lock, Car, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -15,6 +16,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, getUserRole } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,15 +26,44 @@ const Login = () => {
       await signIn(formData.email, formData.password);
       const role = await getUserRole();
       
-      if (role === 'owner') {
-        navigate('/dashboard/owner');
-      } else if (role === 'renter') {
-        navigate('/dashboard/renter');
-      } else {
+      if (!role) {
         navigate('/profile');
+        toast({
+          title: "Configuration requise",
+          description: "Veuillez configurer votre profil pour continuer",
+        });
+        return;
+      }
+
+      switch (role) {
+        case 'owner':
+          toast({
+            title: "Connexion réussie",
+            description: "Bienvenue sur votre tableau de bord propriétaire",
+          });
+          navigate('/dashboard/owner');
+          break;
+        case 'renter':
+          toast({
+            title: "Connexion réussie",
+            description: "Bienvenue sur votre tableau de bord locataire",
+          });
+          navigate('/dashboard/renter');
+          break;
+        default:
+          navigate('/profile');
+          toast({
+            title: "Configuration requise",
+            description: "Veuillez configurer votre profil pour continuer",
+          });
       }
     } catch (error) {
       console.error("Erreur lors de la connexion:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur de connexion",
+        description: "Vérifiez vos identifiants et réessayez",
+      });
     } finally {
       setIsLoading(false);
     }

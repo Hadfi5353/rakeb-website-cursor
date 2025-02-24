@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
@@ -38,7 +37,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return null
-      return user.user_metadata?.role as UserRole || null
+
+      if (user.user_metadata?.role) {
+        return user.user_metadata.role as UserRole;
+      }
+
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      return profile?.role as UserRole || null;
     } catch (error) {
       console.error("Erreur lors de la récupération du rôle:", error)
       return null
@@ -116,11 +127,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       if (data.user) {
-        const role = data.user.user_metadata?.role as UserRole
-        toast({
-          title: "Connexion réussie",
-          description: `Bienvenue sur Rakeb ${data.user.user_metadata?.first_name}!`,
-        })
+        const role = await getUserRole();
+        if (!role) {
+          toast({
+            variant: "default",
+            title: "Configuration requise",
+            description: "Veuillez configurer votre profil pour continuer",
+          });
+        } else {
+          toast({
+            title: "Connexion réussie",
+            description: `Bienvenue sur Rakeb ${data.user.user_metadata?.first_name}!`,
+          });
+        }
       }
     } catch (error) {
       console.error("Erreur lors de la connexion:", error)
