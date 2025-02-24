@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -30,8 +29,8 @@ const AddCar = () => {
     description: "",
     transmission: "",
     fuel: "",
-    longitude: 0, // Valeur par défaut pour Casablanca
-    latitude: 0,  // Valeur par défaut pour Casablanca
+    longitude: 0,
+    latitude: 0,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,6 +59,13 @@ const AddCar = () => {
         fuel: formData.fuel as "diesel" | "essence" | "hybrid" | "electric",
         longitude: formData.longitude,
         latitude: formData.latitude,
+        category: "Berline" as const,
+        rating: 0,
+        reviews_count: 0,
+        isPremium: false,
+        available_units: 1,
+        views_count: 0,
+        features: [],
       };
 
       await vehiclesApi.createVehicle(vehicleData);
