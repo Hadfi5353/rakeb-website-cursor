@@ -28,7 +28,41 @@ const Profile = () => {
       return;
     }
     getProfile();
+    checkDocuments();
   }, [user, navigate]);
+
+  const checkDocuments = async () => {
+    if (!user) return;
+
+    try {
+      const { data: documents, error } = await supabase
+        .from('user_documents')
+        .select('document_type, status')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      const hasRequiredDocuments = documents?.some(doc => doc.status === 'approved');
+      
+      if (!hasRequiredDocuments) {
+        toast({
+          title: "Documents requis",
+          description: "Veuillez télécharger vos documents pour continuer",
+          action: (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => navigate('/documents/verification')}
+            >
+              Télécharger
+            </Button>
+          ),
+        });
+      }
+    } catch (error) {
+      console.error('Error checking documents:', error);
+    }
+  };
 
   useEffect(() => {
     if (profile.role === 'owner') {

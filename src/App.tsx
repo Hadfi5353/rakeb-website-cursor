@@ -22,6 +22,7 @@ import Legal from "./pages/legal/Legal";
 import Privacy from "./pages/legal/Privacy";
 import Insurance from "./pages/legal/Insurance";
 import OwnerTools from "./pages/owner/OwnerTools";
+import DocumentVerification from "./pages/documents/DocumentVerification";
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
             <Route path="/legal/privacy" element={<Privacy />} />
             <Route path="/legal/insurance" element={<Insurance />} />
             <Route path="/owner/tools" element={<OwnerTools />} />
+            <Route path="/documents/verification" element={<DocumentVerification />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
