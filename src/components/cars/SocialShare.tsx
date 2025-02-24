@@ -1,5 +1,5 @@
 
-import { Share2, Facebook, Twitter, WhatsApp, Link as LinkIcon } from "lucide-react";
+import { Share2, Facebook, Twitter, MessageCircle, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -60,7 +60,7 @@ const SocialShare = ({ car, className = "" }: SocialShareProps) => {
           Twitter
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleShare("whatsapp")}>
-          <WhatsApp className="w-4 h-4 mr-2" />
+          <MessageCircle className="w-4 h-4 mr-2" />
           WhatsApp
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleShare("copy")}>
