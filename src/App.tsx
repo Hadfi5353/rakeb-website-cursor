@@ -23,6 +23,7 @@ import Privacy from "./pages/legal/Privacy";
 import Insurance from "./pages/legal/Insurance";
 import OwnerTools from "./pages/owner/OwnerTools";
 import DocumentVerification from "./pages/documents/DocumentVerification";
+import ReservationPage from "./pages/cars/ReservationPage";
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/cars/add" element={<AddCar />} />
             <Route path="/cars/:id" element={<CarDetail />} />
+            <Route path="/cars/:id/reserve" element={<ReservationPage />} />
             <Route path="/become-owner" element={<BecomeOwner />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/contact" element={<Contact />} />

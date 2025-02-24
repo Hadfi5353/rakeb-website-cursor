@@ -2,6 +2,7 @@
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Star, User, Calendar, Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import SocialShare from "./SocialShare";
 
 interface CarCardProps {
@@ -15,10 +16,16 @@ interface CarCardProps {
     reviews: number;
     insurance?: string;
   };
-  onReserve: (car: any) => void;
+  onReserve?: (car: any) => void;
 }
 
-const CarCard = ({ car, onReserve }: CarCardProps) => {
+const CarCard = ({ car }: CarCardProps) => {
+  const navigate = useNavigate();
+
+  const handleReservation = () => {
+    navigate(`/cars/${car.id}/reserve`, { state: { car } });
+  };
+
   return (
     <Card className="overflow-hidden hover:shadow-medium transition-all duration-300">
       <CardHeader className="p-0">
@@ -66,7 +73,7 @@ const CarCard = ({ car, onReserve }: CarCardProps) => {
           </div>
           <Button 
             className="bg-primary hover:bg-primary-dark transition-colors"
-            onClick={() => onReserve(car)}
+            onClick={handleReservation}
           >
             <Calendar className="w-4 h-4 mr-2" />
             Réserver
