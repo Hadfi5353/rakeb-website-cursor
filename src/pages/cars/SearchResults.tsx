@@ -26,6 +26,7 @@ import {
 import SearchBar from "@/components/SearchBar";
 import CategoryButton from "@/components/cars/CategoryButton";
 import AdvancedFilters from "@/components/cars/AdvancedFilters";
+import MapPin from "@/components/ui/map-pin";
 
 const carCategories = [
   "Toutes", "SUV", "Berline", "Sportive", "Luxe", "Électrique", "Familiale"
@@ -181,51 +182,51 @@ const SearchResults = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-24">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-8 relative transform hover:scale-[1.02] transition-transform duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-6 sm:mb-8 relative transform hover:scale-[1.02] transition-transform duration-300">
           <SearchBar />
           <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl blur-xl" />
         </div>
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div className="space-y-2">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-4">
+          <div className="space-y-1 w-full sm:w-auto">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
               {filteredVehicles.length} véhicules trouvés
             </h1>
             {searchParams.get("location") && (
-              <p className="text-gray-600 flex items-center gap-2">
-                <MapIcon className="w-4 h-4" />
+              <p className="text-sm sm:text-base text-gray-600 flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
                 à {searchParams.get("location")}
               </p>
             )}
           </div>
 
-          <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm p-1 rounded-lg">
+          <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm p-1 rounded-lg w-full sm:w-auto">
             <Button
               variant={viewMode === "grid" ? "default" : "outline"}
               size="sm"
               onClick={() => setViewMode("grid")}
-              className="transition-all duration-300 hover:scale-105"
+              className="flex-1 sm:flex-none transition-all duration-300 hover:scale-105"
             >
               <LayoutGrid className="w-4 h-4" />
-              <span className="ml-2 hidden md:inline">Grille</span>
+              <span className="ml-2">Grille</span>
             </Button>
             <Button
               variant={viewMode === "map" ? "default" : "outline"}
               size="sm"
               onClick={() => setViewMode("map")}
-              className="transition-all duration-300 hover:scale-105"
+              className="flex-1 sm:flex-none transition-all duration-300 hover:scale-105"
             >
               <MapIcon className="w-4 h-4" />
-              <span className="ml-2 hidden md:inline">Carte</span>
+              <span className="ml-2">Carte</span>
             </Button>
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="w-full md:w-64 space-y-6">
-            <Card className="p-6 backdrop-blur-xl bg-white/80 border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          <div className="w-full lg:w-64 space-y-6">
+            <Card className="p-4 sm:p-6 backdrop-blur-xl bg-white/80 border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium mb-3 text-gray-700">
@@ -344,9 +345,9 @@ const SearchResults = () => {
               </Button>
             </Card>
 
-            <Card className="p-6 backdrop-blur-xl bg-white/80 border-0 shadow-lg space-y-4">
+            <Card className="p-4 sm:p-6 backdrop-blur-xl bg-white/80 border-0 shadow-lg space-y-4 hidden lg:block">
               <h3 className="font-medium text-gray-900">Tendances actuelles</h3>
-              <div className="space-y-4 text-sm">
+              <div className="space-y-3 text-sm">
                 <div className="flex items-center gap-2 text-primary/90 bg-primary/5 p-3 rounded-lg transform hover:scale-[1.02] transition-all cursor-default">
                   <Users className="w-4 h-4" />
                   <span>12 personnes consultent cette recherche</span>
@@ -365,7 +366,7 @@ const SearchResults = () => {
 
           <div className="flex-1">
             {viewMode === "grid" ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {filteredVehicles.map((car) => (
                   <div 
                     key={car.id} 
