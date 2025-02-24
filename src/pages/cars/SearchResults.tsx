@@ -19,9 +19,13 @@ import {
   Clock,
   TrendingUp,
   ShieldCheck,
-  Heart 
+  Heart,
+  ChevronDown,
+  ChevronUp 
 } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
+import CategoryButton from "@/components/cars/CategoryButton";
+import AdvancedFilters from "@/components/cars/AdvancedFilters";
 
 const carCategories = [
   "Toutes", "SUV", "Berline", "Sportive", "Luxe", "Électrique", "Familiale"
@@ -109,6 +113,8 @@ const SearchResults = () => {
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
   const [minRating, setMinRating] = useState(0);
   const [showPremiumOnly, setShowPremiumOnly] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const availableBrands = Array.from(new Set(exampleVehicles.map(v => v.brand)));
 
   const { data: vehicles, isLoading } = useQuery({
     queryKey: ['vehicles'],
@@ -220,27 +226,19 @@ const SearchResults = () => {
         <div className="flex flex-col md:flex-row gap-8">
           <div className="w-full md:w-64 space-y-6">
             <Card className="p-6 backdrop-blur-xl bg-white/80 border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <h2 className="text-lg font-semibold mb-6 flex items-center bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-                <SlidersHorizontal className="w-5 h-5 mr-2 text-primary" />
-                Filtres avancés
-              </h2>
-
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium mb-3 text-gray-700">
                     Catégorie
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-2">
                     {carCategories.map((category) => (
-                      <Button
+                      <CategoryButton
                         key={category}
-                        variant={selectedCategory === category ? "default" : "outline"}
-                        size="sm"
+                        category={category}
+                        isSelected={selectedCategory === category}
                         onClick={() => setSelectedCategory(category)}
-                        className="text-xs"
-                      >
-                        {category}
-                      </Button>
+                      />
                     ))}
                   </div>
                 </div>
@@ -286,12 +284,12 @@ const SearchResults = () => {
                         variant={minRating === rating ? "default" : "outline"}
                         size="sm"
                         onClick={() => setMinRating(rating)}
-                        className="flex-1"
+                        className="flex-1 transition-all duration-300 hover:scale-[1.02]"
                       >
                         {rating > 0 ? (
-                          <div className="flex items-center">
+                          <div className="flex items-center gap-1">
                             {rating}
-                            <Star className="w-3 h-3 ml-1 fill-current" />
+                            <Star className="w-3 h-3 fill-current" />
                           </div>
                         ) : (
                           "Tous"
@@ -301,49 +299,33 @@ const SearchResults = () => {
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <label className="block text-sm font-medium mb-2 text-gray-700">
-                    Options
-                  </label>
-                  <Button
-                    variant={showPremiumOnly ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setShowPremiumOnly(!showPremiumOnly)}
-                    className="w-full justify-start"
-                  >
-                    <ShieldCheck className="w-4 h-4 mr-2" />
-                    Véhicules Premium uniquement
-                  </Button>
-                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className="w-full justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <SlidersHorizontal className="w-4 h-4" />
+                    Filtres avancés
+                  </div>
+                  {showAdvancedFilters ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </Button>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">
-                    Transmission
-                  </label>
-                  <Select
-                    value={selectedTransmission}
-                    onValueChange={setSelectedTransmission}
-                  >
-                    <option value="">Toutes</option>
-                    <option value="manual">Manuelle</option>
-                    <option value="automatic">Automatique</option>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">
-                    Marque
-                  </label>
-                  <Select
-                    value={selectedBrand}
-                    onValueChange={setSelectedBrand}
-                  >
-                    <option value="">Toutes les marques</option>
-                    {Array.from(new Set(exampleVehicles.map(v => v.brand))).map(brand => (
-                      <option key={brand} value={brand}>{brand}</option>
-                    ))}
-                  </Select>
-                </div>
+                {showAdvancedFilters && (
+                  <AdvancedFilters
+                    selectedBrand={selectedBrand}
+                    setSelectedBrand={setSelectedBrand}
+                    selectedTransmission={selectedTransmission}
+                    setSelectedTransmission={setSelectedTransmission}
+                    showPremiumOnly={showPremiumOnly}
+                    setShowPremiumOnly={setShowPremiumOnly}
+                    availableBrands={availableBrands}
+                  />
+                )}
               </div>
 
               <Button 
