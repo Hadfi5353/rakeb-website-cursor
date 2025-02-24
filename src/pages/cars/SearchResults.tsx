@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -28,6 +27,78 @@ const carCategories = [
   "Toutes", "SUV", "Berline", "Sportive", "Luxe", "Électrique", "Familiale"
 ];
 
+const exampleVehicles: Vehicle[] = [
+  {
+    id: "1",
+    name: "Mercedes GLC 300",
+    brand: "Mercedes",
+    model: "GLC",
+    year: 2023,
+    price: 890,
+    location: "Casablanca Centre",
+    description: "SUV luxueux avec intérieur cuir et toit panoramique",
+    transmission: "automatic",
+    fuel: "essence",
+    image_url: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?q=80&w=800",
+    owner_id: "1",
+    created_at: new Date().toISOString(),
+    longitude: -7.589843,
+    latitude: 33.573109,
+    category: "SUV",
+    rating: 4.8,
+    reviews_count: 24,
+    isPremium: true,
+    available_units: 1,
+    features: ["Cuir", "GPS", "Toit ouvrant", "Bluetooth"]
+  },
+  {
+    id: "2",
+    name: "BMW Série 5",
+    brand: "BMW",
+    model: "530i",
+    year: 2023,
+    price: 950,
+    location: "Marrakech Guéliz",
+    description: "Berline sportive avec pack M Sport",
+    transmission: "automatic",
+    fuel: "essence",
+    image_url: "https://images.unsplash.com/photo-1555215695-3004980ad54e?q=80&w=800",
+    owner_id: "2",
+    created_at: new Date().toISOString(),
+    longitude: -8.008889,
+    latitude: 31.631794,
+    category: "Berline",
+    rating: 4.9,
+    reviews_count: 32,
+    isPremium: true,
+    available_units: 2,
+    features: ["Pack M Sport", "Sièges chauffants", "CarPlay", "Harman Kardon"]
+  },
+  {
+    id: "3",
+    name: "Tesla Model 3",
+    brand: "Tesla",
+    model: "Model 3",
+    year: 2023,
+    price: 780,
+    location: "Rabat Agdal",
+    description: "Véhicule électrique performant avec Autopilot",
+    transmission: "automatic",
+    fuel: "electric",
+    image_url: "https://images.unsplash.com/photo-1560958089-b8a1929cea89?q=80&w=800",
+    owner_id: "3",
+    created_at: new Date().toISOString(),
+    longitude: -6.849813,
+    latitude: 33.991589,
+    category: "Électrique",
+    rating: 4.7,
+    reviews_count: 18,
+    isPremium: true,
+    available_units: 1,
+    features: ["Autopilot", "Toit en verre", "Supercharge", "Premium Audio"]
+  }
+];
+
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
   const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([]);
@@ -45,9 +116,8 @@ const SearchResults = () => {
   });
 
   useEffect(() => {
-    if (!vehicles) return;
-
-    let filtered = [...vehicles];
+    let filtered = [...exampleVehicles];
+    
     const location = searchParams.get("location")?.toLowerCase();
     
     if (location) {
@@ -81,7 +151,7 @@ const SearchResults = () => {
     }
 
     setFilteredVehicles(filtered);
-  }, [vehicles, searchParams, selectedBrand, selectedTransmission, selectedCategory, priceRange, minRating, showPremiumOnly]);
+  }, [searchParams, selectedBrand, selectedTransmission, selectedCategory, priceRange, minRating, showPremiumOnly]);
 
   const addToFavorites = (carId: string) => {
     toast.success("Véhicule ajouté aux favoris");
@@ -107,13 +177,11 @@ const SearchResults = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-24">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Barre de recherche améliorée */}
         <div className="mb-8 relative transform hover:scale-[1.02] transition-transform duration-300">
           <SearchBar />
           <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl blur-xl" />
         </div>
 
-        {/* En-tête des résultats avec statistiques */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div className="space-y-2">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
@@ -127,7 +195,6 @@ const SearchResults = () => {
             )}
           </div>
 
-          {/* Vue grille/carte avec animation au survol */}
           <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm p-1 rounded-lg">
             <Button
               variant={viewMode === "grid" ? "default" : "outline"}
@@ -151,7 +218,6 @@ const SearchResults = () => {
         </div>
 
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Filtres avec design amélioré */}
           <div className="w-full md:w-64 space-y-6">
             <Card className="p-6 backdrop-blur-xl bg-white/80 border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
               <h2 className="text-lg font-semibold mb-6 flex items-center bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
@@ -160,7 +226,6 @@ const SearchResults = () => {
               </h2>
 
               <div className="space-y-6">
-                {/* Catégories */}
                 <div>
                   <label className="block text-sm font-medium mb-3 text-gray-700">
                     Catégorie
@@ -180,7 +245,6 @@ const SearchResults = () => {
                   </div>
                 </div>
 
-                {/* Prix */}
                 <div>
                   <label className="block text-sm font-medium mb-3 text-gray-700">
                     Prix par jour
@@ -211,7 +275,6 @@ const SearchResults = () => {
                   </div>
                 </div>
 
-                {/* Note minimale */}
                 <div>
                   <label className="block text-sm font-medium mb-3 text-gray-700">
                     Note minimale
@@ -238,7 +301,6 @@ const SearchResults = () => {
                   </div>
                 </div>
 
-                {/* Options */}
                 <div className="space-y-3">
                   <label className="block text-sm font-medium mb-2 text-gray-700">
                     Options
@@ -254,7 +316,6 @@ const SearchResults = () => {
                   </Button>
                 </div>
 
-                {/* Transmission */}
                 <div>
                   <label className="block text-sm font-medium mb-2 text-gray-700">
                     Transmission
@@ -269,7 +330,6 @@ const SearchResults = () => {
                   </Select>
                 </div>
 
-                {/* Marque */}
                 <div>
                   <label className="block text-sm font-medium mb-2 text-gray-700">
                     Marque
@@ -279,7 +339,7 @@ const SearchResults = () => {
                     onValueChange={setSelectedBrand}
                   >
                     <option value="">Toutes les marques</option>
-                    {Array.from(new Set(vehicles?.map(v => v.brand))).map(brand => (
+                    {Array.from(new Set(exampleVehicles.map(v => v.brand))).map(brand => (
                       <option key={brand} value={brand}>{brand}</option>
                     ))}
                   </Select>
@@ -302,7 +362,6 @@ const SearchResults = () => {
               </Button>
             </Card>
 
-            {/* Statistiques en temps réel avec animations */}
             <Card className="p-6 backdrop-blur-xl bg-white/80 border-0 shadow-lg space-y-4">
               <h3 className="font-medium text-gray-900">Tendances actuelles</h3>
               <div className="space-y-4 text-sm">
@@ -322,7 +381,6 @@ const SearchResults = () => {
             </Card>
           </div>
 
-          {/* Résultats avec animations et effets visuels */}
           <div className="flex-1">
             {viewMode === "grid" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
