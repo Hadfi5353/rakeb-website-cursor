@@ -24,6 +24,9 @@ const cars = [
     location: "Rabat",
     rating: 4.9,
     reviews: 18,
+    features: ["Climatisation", "5 places", "Bluetooth"],
+    insurance: "Tous risques incluse",
+    minDuration: "3 jours",
   },
   {
     id: 3,
@@ -33,6 +36,9 @@ const cars = [
     location: "Marrakech",
     rating: 4.7,
     reviews: 32,
+    features: ["Climatisation", "5 places", "Bluetooth", "GPS", "Caméra de recul"],
+    insurance: "Tous risques incluse",
+    minDuration: "3 jours",
   },
 ];
 
@@ -61,7 +67,7 @@ const PopularCars = () => {
           {cars.map((car, index) => (
             <div
               key={car.id}
-              className="animate-fadeIn"
+              className="animate-fadeIn h-full"
               style={{ animationDelay: `${index * 200}ms` }}
             >
               <CarCard car={car} onReserve={handleReservation} />
