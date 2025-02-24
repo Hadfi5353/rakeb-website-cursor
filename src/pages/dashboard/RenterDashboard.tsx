@@ -44,7 +44,6 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import SearchBar from "@/components/SearchBar";
 import Navbar from "@/components/Navbar";
 
-// Mock data pour les statistiques
 const usageStats = [
   { mois: 'Jan', locations: 2 },
   { mois: 'Fév', locations: 3 },
@@ -206,7 +205,6 @@ const RenterDashboard = () => {
           </Card>
         </div>
 
-        {/* Graphique d'utilisation */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle>Statistiques d'utilisation</CardTitle>
