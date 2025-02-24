@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -24,8 +23,8 @@ import {
 import { vehiclesApi } from "@/lib/api";
 import { Vehicle } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
-import VehicleGallery from "../components/cars/VehicleGallery";
-import ReservationDialog from "../components/cars/ReservationDialog";
+import VehicleGallery from "@/components/cars/VehicleGallery";
+import ReservationDialog from "@/components/cars/ReservationDialog";
 
 const CarDetail = () => {
   const { id } = useParams();
@@ -69,7 +68,6 @@ const CarDetail = () => {
     );
   }
 
-  // Images de démonstration (à remplacer par les vraies images)
   const demoImages = [
     "/placeholder.svg",
     "/placeholder.svg",
@@ -79,7 +77,6 @@ const CarDetail = () => {
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Navigation */}
         <div className="mb-8">
           <Link 
             to="/" 
@@ -89,13 +86,11 @@ const CarDetail = () => {
           </Link>
         </div>
 
-        {/* Galerie */}
         <div className="mb-8">
           <VehicleGallery images={demoImages} />
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Informations principales */}
           <div className="lg:col-span-2 space-y-8">
             <div className="bg-white rounded-lg shadow-sm">
               <div className="p-6">
@@ -175,7 +170,6 @@ const CarDetail = () => {
               </div>
             </div>
 
-            {/* Avis */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-xl font-semibold mb-6">Avis des locataires</h2>
               <div className="space-y-6">
@@ -205,9 +199,7 @@ const CarDetail = () => {
             </div>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
-            {/* Prix et réservation */}
             <Card>
               <CardContent className="p-6">
                 <div className="text-2xl font-bold text-gray-900 mb-4">
@@ -229,7 +221,6 @@ const CarDetail = () => {
               </CardContent>
             </Card>
 
-            {/* Propriétaire */}
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4 mb-4">
@@ -249,7 +240,6 @@ const CarDetail = () => {
               </CardContent>
             </Card>
 
-            {/* Conditions */}
             <Card>
               <CardContent className="p-6 space-y-4">
                 <h3 className="font-semibold text-lg">Conditions de location</h3>
