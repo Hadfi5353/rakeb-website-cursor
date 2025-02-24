@@ -12,8 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { useState } from "react";
-import { CheckCircle, CreditCard, Info } from "lucide-react";
+import { CheckCircle, CreditCard, Info, Shield, Tag } from "lucide-react";
 import { toast } from "sonner";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface ReservationDialogProps {
   isOpen: boolean;
@@ -21,10 +22,27 @@ interface ReservationDialogProps {
   car: any;
 }
 
+const insuranceOptions = [
+  {
+    id: "basic",
+    name: "Basique",
+    description: "Couverture des dommages matériels de base",
+    price: 50,
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    description: "Couverture complète avec assistance 24/7",
+    price: 100,
+  },
+];
+
 const ReservationDialog = ({ isOpen, onClose, car }: ReservationDialogProps) => {
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [currentStep, setCurrentStep] = useState(1);
+  const [selectedInsurance, setSelectedInsurance] = useState("");
+  const [promoCode, setPromoCode] = useState("");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -37,7 +55,22 @@ const ReservationDialog = ({ isOpen, onClose, car }: ReservationDialogProps) => 
   const calculateTotal = () => {
     if (!startDate || !endDate || !car) return 0;
     const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    return days * parseInt(car.price);
+    let total = days * parseInt(car.price);
+    
+    // Ajout du prix de l'assurance
+    if (selectedInsurance) {
+      const insurance = insuranceOptions.find(opt => opt.id === selectedInsurance);
+      if (insurance) {
+        total += insurance.price * days;
+      }
+    }
+    
+    // Simulation de réduction avec code promo
+    if (promoCode === "WELCOME") {
+      total = total * 0.9; // 10% de réduction
+    }
+    
+    return Math.round(total);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,9 +79,17 @@ const ReservationDialog = ({ isOpen, onClose, car }: ReservationDialogProps) => 
   };
 
   const handleSubmit = () => {
-    // Ici, vous pouvez ajouter la logique de traitement de la réservation
     toast.success("Réservation confirmée ! Vous allez recevoir un email de confirmation.");
     onClose();
+  };
+
+  const applyPromoCode = () => {
+    if (promoCode === "WELCOME") {
+      toast.success("Code promo appliqué ! -10% sur votre réservation");
+    } else {
+      toast.error("Code promo invalide");
+      setPromoCode("");
+    }
   };
 
   return (
@@ -94,6 +135,32 @@ const ReservationDialog = ({ isOpen, onClose, car }: ReservationDialogProps) => 
             <div className="space-y-2">
               <Label>Lieu de prise en charge</Label>
               <Input placeholder="Adresse complète" />
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Shield className="w-5 h-5 text-primary" />
+                <Label>Options d'assurance</Label>
+              </div>
+              <RadioGroup
+                value={selectedInsurance}
+                onValueChange={setSelectedInsurance}
+                className="gap-4"
+              >
+                {insuranceOptions.map((option) => (
+                  <div key={option.id} className="flex items-start space-x-3">
+                    <RadioGroupItem value={option.id} id={option.id} />
+                    <div className="grid gap-1.5">
+                      <Label htmlFor={option.id} className="font-medium">
+                        {option.name} - {option.price} Dh/jour
+                      </Label>
+                      <p className="text-sm text-gray-500">
+                        {option.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </RadioGroup>
             </div>
 
             {startDate && endDate && (
@@ -155,6 +222,27 @@ const ReservationDialog = ({ isOpen, onClose, car }: ReservationDialogProps) => 
 
             <div className="space-y-4">
               <div className="flex items-center gap-2">
+                <Tag className="w-5 h-5 text-primary" />
+                <Label>Code promo</Label>
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Entrez votre code"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                />
+                <Button 
+                  variant="outline"
+                  onClick={applyPromoCode}
+                  className="whitespace-nowrap"
+                >
+                  Appliquer
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
                 <h3 className="font-medium text-lg">Paiement</h3>
                 <Info className="w-4 h-4 text-gray-400" />
               </div>
@@ -211,7 +299,19 @@ const ReservationDialog = ({ isOpen, onClose, car }: ReservationDialogProps) => 
                     {Math.ceil((endDate?.getTime() || 0 - (startDate?.getTime() || 0)) / (1000 * 60 * 60 * 24))} jours
                   </span>
                 </div>
-                <div className="flex justify-between">
+                {selectedInsurance && (
+                  <div className="flex justify-between">
+                    <span>Assurance {insuranceOptions.find(opt => opt.id === selectedInsurance)?.name}</span>
+                    <span className="font-medium">Incluse</span>
+                  </div>
+                )}
+                {promoCode === "WELCOME" && (
+                  <div className="flex justify-between text-primary">
+                    <span>Réduction (WELCOME)</span>
+                    <span>-10%</span>
+                  </div>
+                )}
+                <div className="flex justify-between pt-2 border-t">
                   <span>Prix total</span>
                   <span className="font-bold text-primary">{calculateTotal()} Dh</span>
                 </div>
