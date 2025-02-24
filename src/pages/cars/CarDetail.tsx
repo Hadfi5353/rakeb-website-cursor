@@ -13,7 +13,7 @@ import VehicleMap from "@/components/cars/details/VehicleMap";
 import ReservationCard from "@/components/cars/details/ReservationCard";
 import CustomerReviews from "@/components/cars/details/CustomerReviews";
 import { Card, CardContent } from "@/components/ui/card";
-import { MessageCircle, Info, Key, Shield } from "lucide-react";
+import { MessageCircle, Info, Key, Shield, Star, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const CarDetail = () => {
