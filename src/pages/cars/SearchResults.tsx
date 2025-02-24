@@ -107,47 +107,56 @@ const SearchResults = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-24">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-8">
+        {/* Barre de recherche améliorée */}
+        <div className="mb-8 relative transform hover:scale-[1.02] transition-transform duration-300">
           <SearchBar />
+          <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl blur-xl" />
         </div>
 
-        {/* En-tête des résultats */}
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+        {/* En-tête des résultats avec statistiques */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div className="space-y-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
               {filteredVehicles.length} véhicules trouvés
             </h1>
             {searchParams.get("location") && (
-              <p className="text-gray-600">
+              <p className="text-gray-600 flex items-center gap-2">
+                <MapIcon className="w-4 h-4" />
                 à {searchParams.get("location")}
               </p>
             )}
           </div>
-          <div className="flex items-center gap-2">
+
+          {/* Vue grille/carte avec animation au survol */}
+          <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm p-1 rounded-lg">
             <Button
               variant={viewMode === "grid" ? "default" : "outline"}
               size="sm"
               onClick={() => setViewMode("grid")}
+              className="transition-all duration-300 hover:scale-105"
             >
               <LayoutGrid className="w-4 h-4" />
+              <span className="ml-2 hidden md:inline">Grille</span>
             </Button>
             <Button
               variant={viewMode === "map" ? "default" : "outline"}
               size="sm"
               onClick={() => setViewMode("map")}
+              className="transition-all duration-300 hover:scale-105"
             >
               <MapIcon className="w-4 h-4" />
+              <span className="ml-2 hidden md:inline">Carte</span>
             </Button>
           </div>
         </div>
 
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Filtres */}
+          {/* Filtres avec design amélioré */}
           <div className="w-full md:w-64 space-y-6">
-            <Card className="p-6 backdrop-blur-xl bg-white/80">
-              <h2 className="text-lg font-semibold mb-6 flex items-center">
+            <Card className="p-6 backdrop-blur-xl bg-white/80 border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <h2 className="text-lg font-semibold mb-6 flex items-center bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
                 <SlidersHorizontal className="w-5 h-5 mr-2 text-primary" />
-                Filtres
+                Filtres avancés
               </h2>
 
               <div className="space-y-6">
@@ -293,19 +302,19 @@ const SearchResults = () => {
               </Button>
             </Card>
 
-            {/* Statistiques en temps réel */}
-            <Card className="p-6 backdrop-blur-xl bg-white/80">
-              <h3 className="font-medium mb-4">Statistiques en direct</h3>
+            {/* Statistiques en temps réel avec animations */}
+            <Card className="p-6 backdrop-blur-xl bg-white/80 border-0 shadow-lg space-y-4">
+              <h3 className="font-medium text-gray-900">Tendances actuelles</h3>
               <div className="space-y-4 text-sm">
-                <div className="flex items-center gap-2 text-primary">
+                <div className="flex items-center gap-2 text-primary/90 bg-primary/5 p-3 rounded-lg transform hover:scale-[1.02] transition-all cursor-default">
                   <Users className="w-4 h-4" />
                   <span>12 personnes consultent cette recherche</span>
                 </div>
-                <div className="flex items-center gap-2 text-primary">
+                <div className="flex items-center gap-2 text-orange-500/90 bg-orange-500/5 p-3 rounded-lg transform hover:scale-[1.02] transition-all cursor-default">
                   <Clock className="w-4 h-4" />
                   <span>Dernière réservation il y a 5 min</span>
                 </div>
-                <div className="flex items-center gap-2 text-primary">
+                <div className="flex items-center gap-2 text-rose-500/90 bg-rose-500/5 p-3 rounded-lg transform hover:scale-[1.02] transition-all cursor-default">
                   <TrendingUp className="w-4 h-4" />
                   <span>Prix en hausse pour ces dates</span>
                 </div>
@@ -313,20 +322,32 @@ const SearchResults = () => {
             </Card>
           </div>
 
-          {/* Résultats */}
+          {/* Résultats avec animations et effets visuels */}
           <div className="flex-1">
             {viewMode === "grid" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredVehicles.map((car) => (
-                  <div key={car.id} className="relative group">
+                  <div 
+                    key={car.id} 
+                    className="relative group transform hover:scale-[1.02] transition-all duration-300"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity -z-10" />
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute top-2 right-2 z-10 bg-white/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-2 right-2 z-10 bg-white/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
                       onClick={() => addToFavorites(car.id)}
                     >
                       <Heart className="w-4 h-4" />
                     </Button>
+                    
+                    {car.isPremium && (
+                      <div className="absolute top-2 left-2 z-10 bg-primary/90 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3" />
+                        Premium
+                      </div>
+                    )}
+                    
                     <CarCard
                       car={{
                         id: Number(car.id),
@@ -334,8 +355,8 @@ const SearchResults = () => {
                         image: car.image_url || "/placeholder.svg",
                         price: `${car.price}`,
                         location: car.location,
-                        rating: 4.5,
-                        reviews: 12,
+                        rating: car.rating,
+                        reviews: car.reviews_count,
                         insurance: "Assurance tous risques incluse"
                       }}
                       onReserve={() => console.log("Réserver:", car)}
@@ -344,13 +365,13 @@ const SearchResults = () => {
                 ))}
               </div>
             ) : (
-              <div className="bg-white/80 backdrop-blur-xl rounded-xl h-[600px] flex items-center justify-center">
+              <div className="bg-white/80 backdrop-blur-xl rounded-xl h-[600px] flex items-center justify-center border-0 shadow-lg">
                 <p className="text-gray-500">Carte en cours de développement</p>
               </div>
             )}
 
             {filteredVehicles.length === 0 && (
-              <div className="text-center py-12 bg-white/80 backdrop-blur-xl rounded-xl">
+              <div className="text-center py-12 bg-white/80 backdrop-blur-xl rounded-xl border-0 shadow-lg">
                 <h2 className="text-xl font-semibold mb-2">
                   Aucun véhicule trouvé
                 </h2>

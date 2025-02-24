@@ -15,4 +15,14 @@ export type Vehicle = {
   created_at: string;
   longitude: number;
   latitude: number;
+  
+  // Nouvelles propriétés
+  category: 'SUV' | 'Berline' | 'Sportive' | 'Luxe' | 'Électrique' | 'Familiale';
+  rating: number;
+  reviews_count: number;
+  isPremium: boolean;
+  available_units?: number;
+  views_count?: number;
+  features?: string[];
+  last_booking?: string;
 };
