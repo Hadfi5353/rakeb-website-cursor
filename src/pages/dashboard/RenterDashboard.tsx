@@ -18,10 +18,42 @@ import {
   Clock,
   Heart,
   Star,
-  History
+  History,
+  Filter,
+  ChevronDown,
+  RotateCw,
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { 
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
+} from "recharts";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import SearchBar from "@/components/SearchBar";
 import Navbar from "@/components/Navbar";
+
+// Mock data pour les statistiques
+const usageStats = [
+  { mois: 'Jan', locations: 2 },
+  { mois: 'Fév', locations: 3 },
+  { mois: 'Mars', locations: 1 },
+  { mois: 'Avr', locations: 4 },
+  { mois: 'Mai', locations: 2 },
+  { mois: 'Juin', locations: 3 },
+];
 
 const mockReservations = [
   {
@@ -31,6 +63,7 @@ const mockReservations = [
     endDate: "2024-03-20",
     status: "En cours",
     price: 2500,
+    location: "Casablanca"
   },
   {
     id: 2,
@@ -39,6 +72,7 @@ const mockReservations = [
     endDate: "2024-04-05",
     status: "À venir",
     price: 3000,
+    location: "Rabat"
   },
 ];
 
@@ -50,6 +84,7 @@ const mockHistory = [
     duration: "5 jours",
     price: 2800,
     rating: 5,
+    location: "Marrakech"
   },
   {
     id: 2,
@@ -58,6 +93,7 @@ const mockHistory = [
     duration: "3 jours",
     price: 1500,
     rating: 4,
+    location: "Tanger"
   },
 ];
 
@@ -67,22 +103,71 @@ const mockFavorites = [
     car: "Mercedes Classe E",
     location: "Casablanca",
     price: 800,
+    rating: 4.5,
+    disponible: true,
   },
   {
     id: 2,
     car: "BMW X5",
     location: "Rabat",
     price: 1000,
+    rating: 4.8,
+    disponible: false,
   },
 ];
 
 const RenterDashboard = () => {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [filterLocation, setFilterLocation] = useState("");
+  const [filterPrice, setFilterPrice] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [historySort, setHistorySort] = useState("date");
+
+  const handleQuickRenewal = (reservation: typeof mockReservations[0]) => {
+    toast.success(`Demande de renouvellement envoyée pour ${reservation.car}`);
+  };
+
+  const handleRating = (historyItem: typeof mockHistory[0], rating: number) => {
+    toast.success(`Note de ${rating}/5 enregistrée pour ${historyItem.car}`);
+  };
+
+  const filteredFavorites = mockFavorites.filter(favorite => {
+    const matchesSearch = favorite.car.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesLocation = !filterLocation || favorite.location === filterLocation;
+    const matchesPrice = !filterPrice || 
+      (filterPrice === "low" && favorite.price <= 800) ||
+      (filterPrice === "medium" && favorite.price > 800 && favorite.price <= 1200) ||
+      (filterPrice === "high" && favorite.price > 1200);
+    
+    return matchesSearch && matchesLocation && matchesPrice;
+  });
+
+  const sortedHistory = [...mockHistory].sort((a, b) => {
+    if (historySort === "date") {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    } else if (historySort === "price") {
+      return b.price - a.price;
+    } else {
+      return b.rating - a.rating;
+    }
+  });
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="container mx-auto py-20 px-4">
-        <h1 className="text-3xl font-bold mb-8">Tableau de bord - Locataire</h1>
-        
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+          <h1 className="text-3xl font-bold">Tableau de bord - Locataire</h1>
+          <div className="mt-4 md:mt-0">
+            <CalendarComponent
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              className="rounded-md border bg-white shadow-sm"
+            />
+          </div>
+        </div>
+
         <div className="mb-8">
           <SearchBar />
         </div>
@@ -122,10 +207,32 @@ const RenterDashboard = () => {
           </Card>
         </div>
 
+        {/* Graphique d'utilisation */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Statistiques d'utilisation</CardTitle>
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={usageStats}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="mois" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="locations" fill="#10b981" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="col-span-1">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg">Réservations</CardTitle>
+              <Button variant="outline" size="sm">
+                <Calendar className="h-4 w-4 mr-2" />
+                Calendrier
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>
@@ -135,6 +242,7 @@ const RenterDashboard = () => {
                     <TableHead>Dates</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead>Prix</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -154,6 +262,16 @@ const RenterDashboard = () => {
                         </span>
                       </TableCell>
                       <TableCell>{reservation.price} Dh</TableCell>
+                      <TableCell>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleQuickRenewal(reservation)}
+                        >
+                          <RotateCw className="h-4 w-4 mr-2" />
+                          Renouveler
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -162,28 +280,64 @@ const RenterDashboard = () => {
           </Card>
 
           <Card className="col-span-1">
-            <CardHeader>
-              <CardTitle className="text-lg">Véhicules favoris</CardTitle>
+            <CardHeader className="space-y-4">
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-lg">Véhicules favoris</CardTitle>
+                <div className="flex gap-2">
+                  <Select onValueChange={setFilterLocation}>
+                    <SelectTrigger className="w-[120px]">
+                      <SelectValue placeholder="Ville" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Casablanca">Casablanca</SelectItem>
+                      <SelectItem value="Rabat">Rabat</SelectItem>
+                      <SelectItem value="Marrakech">Marrakech</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select onValueChange={setFilterPrice}>
+                    <SelectTrigger className="w-[120px]">
+                      <SelectValue placeholder="Prix" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">≤ 800 Dh</SelectItem>
+                      <SelectItem value="medium">801-1200 Dh</SelectItem>
+                      <SelectItem value="high">> 1200 Dh</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <Input
+                placeholder="Rechercher un véhicule..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full"
+              />
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {mockFavorites.map((favorite) => (
+                {filteredFavorites.map((favorite) => (
                   <div key={favorite.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center space-x-3">
                       <Car className="h-5 w-5 text-gray-500" />
                       <div>
                         <p className="font-medium">{favorite.car}</p>
-                        <p className="text-sm text-gray-500 flex items-center">
-                          <MapPin className="h-4 w-4 mr-1" />
-                          {favorite.location}
-                        </p>
+                        <div className="flex items-center text-sm text-gray-500 space-x-2">
+                          <span className="flex items-center">
+                            <MapPin className="h-4 w-4 mr-1" />
+                            {favorite.location}
+                          </span>
+                          <span className="flex items-center">
+                            <Star className="h-4 w-4 mr-1 text-yellow-400 fill-yellow-400" />
+                            {favorite.rating}
+                          </span>
+                        </div>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-primary">{favorite.price} Dh/jour</p>
-                      <Button variant="link" size="sm" className="text-gray-500">
-                        Voir les détails
-                      </Button>
+                      <span className={`text-xs ${favorite.disponible ? 'text-green-600' : 'text-red-600'}`}>
+                        {favorite.disponible ? 'Disponible' : 'Indisponible'}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -192,8 +346,18 @@ const RenterDashboard = () => {
           </Card>
 
           <Card className="col-span-1 lg:col-span-2">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg">Historique des locations</CardTitle>
+              <Select onValueChange={setHistorySort} defaultValue="date">
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Trier par" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date">Date</SelectItem>
+                  <SelectItem value="price">Prix</SelectItem>
+                  <SelectItem value="rating">Note</SelectItem>
+                </SelectContent>
+              </Select>
             </CardHeader>
             <CardContent>
               <Table>
@@ -204,10 +368,11 @@ const RenterDashboard = () => {
                     <TableHead>Durée</TableHead>
                     <TableHead>Prix total</TableHead>
                     <TableHead>Note</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockHistory.map((history) => (
+                  {sortedHistory.map((history) => (
                     <TableRow key={history.id}>
                       <TableCell className="font-medium">{history.car}</TableCell>
                       <TableCell>{history.date}</TableCell>
@@ -218,6 +383,34 @@ const RenterDashboard = () => {
                           <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
                           <span className="ml-1">{history.rating}/5</span>
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              Noter
+                              <ChevronDown className="h-4 w-4 ml-1" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            {[1, 2, 3, 4, 5].map((rating) => (
+                              <DropdownMenuItem 
+                                key={rating}
+                                onClick={() => handleRating(history, rating)}
+                              >
+                                <div className="flex items-center">
+                                  {Array.from({ length: rating }).map((_, i) => (
+                                    <Star 
+                                      key={i}
+                                      className="h-4 w-4 text-yellow-400 fill-yellow-400 mr-1"
+                                    />
+                                  ))}
+                                  <span className="ml-2">{rating} étoile{rating > 1 ? 's' : ''}</span>
+                                </div>
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}
