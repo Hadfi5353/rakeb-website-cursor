@@ -65,7 +65,7 @@ const Navbar = () => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/cars/add">
+            <Link to="/become-owner">
               <Button 
                 variant="outline" 
                 size="sm"
@@ -234,7 +234,7 @@ const Navbar = () => {
                 </div>
               ) : (
                 <div className="pt-20 px-6 pb-6 space-y-4">
-                  <Link to="/cars/add" onClick={() => setIsOpen(false)}>
+                  <Link to="/become-owner" onClick={() => setIsOpen(false)}>
                     <Button className="w-full" variant="outline">
                       <Car className="w-4 h-4 mr-2" />
                       Devenir propriétaire
