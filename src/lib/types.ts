@@ -13,4 +13,6 @@ export type Vehicle = {
   image_url?: string;
   owner_id: string;
   created_at: string;
+  longitude: number;
+  latitude: number;
 };
