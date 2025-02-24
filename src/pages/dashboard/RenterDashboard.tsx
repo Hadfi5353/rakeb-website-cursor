@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,6 @@ import {
 } from "@/components/ui/table";
 import {
   MapPin,
-  Calendar,
   Search,
   Car,
   Clock,
@@ -40,7 +40,6 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import SearchBar from "@/components/SearchBar";
 import Navbar from "@/components/Navbar";
 
@@ -115,7 +114,6 @@ const mockFavorites = [
 ];
 
 const RenterDashboard = () => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [filterLocation, setFilterLocation] = useState("");
   const [filterPrice, setFilterPrice] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -134,7 +132,7 @@ const RenterDashboard = () => {
     const matchesLocation = !filterLocation || favorite.location === filterLocation;
     const matchesPrice = !filterPrice || 
       (filterPrice === "low" && favorite.price <= 800) ||
-      (filterPrice === "medium" && favorite.price > 800 && favorite.price <= 1200) ||
+      (filterPrice === "medium" && (favorite.price > 800 && favorite.price <= 1200)) ||
       (filterPrice === "high" && favorite.price > 1200);
     
     return matchesSearch && matchesLocation && matchesPrice;
@@ -153,17 +151,9 @@ const RenterDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="container mx-auto py-20 px-4">
+      <div className="container mx-auto py-8 px-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <h1 className="text-3xl font-bold">Tableau de bord - Locataire</h1>
-          <div className="mt-4 md:mt-0">
-            <CalendarComponent
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              className="rounded-md border bg-white shadow-sm"
-            />
-          </div>
         </div>
 
         <div className="mb-8">
@@ -226,10 +216,6 @@ const RenterDashboard = () => {
           <Card className="col-span-1">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg">Réservations</CardTitle>
-              <Button variant="outline" size="sm">
-                <Calendar className="h-4 w-4 mr-2" />
-                Calendrier
-              </Button>
             </CardHeader>
             <CardContent>
               <Table>
