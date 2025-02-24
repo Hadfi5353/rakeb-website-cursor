@@ -19,22 +19,56 @@ import {
   Settings,
   Users,
   Gauge,
+  Heart,
 } from "lucide-react";
 import { vehiclesApi } from "@/lib/api";
 import { Vehicle } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import VehicleGallery from "@/components/cars/VehicleGallery";
 import ReservationDialog from "@/components/cars/ReservationDialog";
+import SocialShare from "@/components/cars/SocialShare";
+import { toast } from "sonner";
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 const CarDetail = () => {
   const { id } = useParams();
   const [isReservationOpen, setIsReservationOpen] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
   const navigate = useNavigate();
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
 
   const { data: vehicle, isLoading, error } = useQuery({
     queryKey: ['vehicle', id],
     queryFn: () => vehiclesApi.getVehicle(id || ''),
   });
+
+  useEffect(() => {
+    if (!vehicle || !mapContainer.current || map.current) return;
+
+    mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN || '';
+    
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [vehicle.longitude, vehicle.latitude],
+      zoom: 13
+    });
+
+    new mapboxgl.Marker()
+      .setLngLat([vehicle.longitude, vehicle.latitude])
+      .addTo(map.current);
+
+    return () => {
+      map.current?.remove();
+    };
+  }, [vehicle]);
+
+  const toggleFavorite = () => {
+    setIsFavorite(!isFavorite);
+    toast.success(isFavorite ? "Retiré des favoris" : "Ajouté aux favoris");
+  };
 
   if (isLoading) {
     return (
@@ -77,13 +111,30 @@ const CarDetail = () => {
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
+        <div className="mb-8 flex justify-between items-center">
           <Link 
             to="/" 
             className="inline-flex items-center text-sm text-gray-600 hover:text-primary transition-colors"
           >
             ← Retour aux résultats
           </Link>
+          <div className="flex gap-2">
+            <SocialShare car={{
+              name: `${vehicle.brand} ${vehicle.model} ${vehicle.year}`,
+              price: vehicle.price.toString(),
+              location: vehicle.location,
+            }} />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={toggleFavorite}
+            >
+              <Heart 
+                className={`w-4 h-4 mr-2 ${isFavorite ? 'fill-primary text-primary' : ''}`} 
+              />
+              {isFavorite ? 'Favori' : 'Ajouter aux favoris'}
+            </Button>
+          </div>
         </div>
 
         <div className="mb-8">
@@ -255,6 +306,51 @@ const CarDetail = () => {
                   <div className="flex items-start">
                     <Shield className="w-4 h-4 mr-2 mt-0.5 text-gray-400" />
                     <p>Caution : 5000 Dh</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="text-xl font-semibold mb-4">Localisation</h2>
+                <div 
+                  ref={mapContainer} 
+                  className="w-full h-[300px] rounded-lg overflow-hidden"
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="text-xl font-semibold mb-4">Politique d'annulation</h2>
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3 p-4 bg-green-50 rounded-lg">
+                    <Shield className="w-5 h-5 text-green-600 mt-0.5" />
+                    <div>
+                      <h3 className="font-medium text-green-800">Annulation flexible</h3>
+                      <p className="text-sm text-green-700">
+                        Annulation gratuite jusqu'à 24h avant le début de la location.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <h3 className="font-medium">Conditions de remboursement :</h3>
+                    <ul className="space-y-2 text-sm text-gray-600">
+                      <li className="flex items-start">
+                        <Check className="w-4 h-4 mr-2 mt-0.5 text-primary" />
+                        <span>Annulation plus de 24h avant : remboursement à 100%</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Check className="w-4 h-4 mr-2 mt-0.5 text-primary" />
+                        <span>Annulation entre 12h et 24h avant : remboursement à 50%</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Check className="w-4 h-4 mr-2 mt-0.5 text-primary" />
+                        <span>Annulation moins de 12h avant : aucun remboursement</span>
+                      </li>
+                    </ul>
                   </div>
                 </div>
               </CardContent>
