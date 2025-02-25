@@ -21,13 +21,10 @@ const SearchBar = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredCities, setFilteredCities] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const suggestionRef = useRef<HTMLDivElement>(null);
-  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Gérer la fermeture du menu de suggestions
       if (suggestionRef.current && !suggestionRef.current.contains(event.target as Node)) {
         setShowSuggestions(false);
       }
@@ -36,18 +33,6 @@ const SearchBar = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  // Fermer les suggestions lors du scroll
-  useEffect(() => {
-    if (isMobile) {
-      const handleScroll = () => {
-        setShowSuggestions(false);
-      };
-
-      window.addEventListener('scroll', handleScroll);
-      return () => window.removeEventListener('scroll', handleScroll);
-    }
-  }, [isMobile]);
 
   const handleLocationChange = (value: string) => {
     setLocation(value);
@@ -70,9 +55,6 @@ const SearchBar = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setShowSuggestions(false);
-    setIsCalendarOpen(false);
-    
     const formattedDates = dateRange?.from && dateRange?.to
       ? `${format(dateRange.from, 'yyyy-MM-dd')}:${format(dateRange.to, 'yyyy-MM-dd')}`
       : '';
@@ -85,12 +67,12 @@ const SearchBar = () => {
   };
 
   return (
-    <form ref={formRef} onSubmit={handleSearch} className="bg-white rounded-xl shadow-lg overflow-visible relative">
+    <form onSubmit={handleSearch} className="bg-white rounded-xl shadow-lg overflow-visible">
       <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-100">
         <div className="flex-1 p-4 relative">
           <Label htmlFor="location" className="sr-only">Lieu</Label>
           <div className="flex items-center gap-3">
-            <MapPin className="text-primary flex-shrink-0" size={20} />
+            <MapPin className="text-primary" size={20} />
             <Input
               id="location"
               type="text"
@@ -98,28 +80,23 @@ const SearchBar = () => {
               className="w-full border-none shadow-none focus-visible:ring-0"
               value={location}
               onChange={(e) => handleLocationChange(e.target.value)}
-              onFocus={() => setIsCalendarOpen(false)}
               autoComplete="off"
             />
           </div>
           {showSuggestions && filteredCities.length > 0 && (
             <div 
               ref={suggestionRef}
-              className="fixed md:absolute left-0 right-0 md:top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-[50vh] overflow-auto z-[100] mx-4 md:mx-0"
-              style={{
-                top: isMobile ? '50%' : 'auto',
-                transform: isMobile ? 'translateY(-50%)' : 'none',
-              }}
+              className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-[40vh] overflow-auto z-[100] md:max-h-60"
             >
               {filteredCities.map((city) => (
                 <button
                   key={city}
                   type="button"
-                  className="w-full px-4 py-4 md:py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors text-base"
+                  className="w-full px-4 py-3 md:py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors text-base md:text-sm"
                   onClick={() => handleCitySelect(city)}
                 >
                   <div className="flex items-center gap-2">
-                    <MapPin className="text-gray-400 flex-shrink-0" size={16} />
+                    <MapPin className="text-gray-400" size={16} />
                     {city}
                   </div>
                 </button>
@@ -130,7 +107,7 @@ const SearchBar = () => {
         
         <div className="flex-1 p-4">
           <Label htmlFor="dates" className="sr-only">Dates</Label>
-          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+          <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -138,9 +115,8 @@ const SearchBar = () => {
                   "w-full justify-start border-none text-left font-normal shadow-none hover:bg-transparent",
                   !dateRange?.from && "text-muted-foreground"
                 )}
-                onClick={() => setShowSuggestions(false)}
               >
-                <CalendarDays className="mr-3 h-5 w-5 text-primary flex-shrink-0" />
+                <CalendarDays className="mr-3 h-5 w-5 text-primary" />
                 {dateRange?.from ? (
                   dateRange.to ? (
                     <>
@@ -156,22 +132,17 @@ const SearchBar = () => {
               </Button>
             </PopoverTrigger>
             <PopoverContent 
-              className="w-[calc(100vw-2rem)] md:w-auto p-0 z-[100]" 
+              className="w-[calc(100vw-2rem)] md:w-auto p-0" 
               align="start"
-              side={isMobile ? "bottom" : "bottom"}
-              sideOffset={8}
+              side={isMobile ? "bottom" : undefined}
+              sideOffset={isMobile ? 0 : 4}
             >
               <Calendar
                 initialFocus
                 mode="range"
                 defaultMonth={dateRange?.from}
                 selected={dateRange}
-                onSelect={(newDateRange) => {
-                  setDateRange(newDateRange);
-                  if (newDateRange?.to) {
-                    setIsCalendarOpen(false);
-                  }
-                }}
+                onSelect={setDateRange}
                 numberOfMonths={isMobile ? 1 : 2}
                 locale={fr}
                 className="p-3"
@@ -181,11 +152,8 @@ const SearchBar = () => {
         </div>
         
         <div className="flex items-center p-4">
-          <Button 
-            type="submit" 
-            className="w-full bg-primary hover:bg-primary/90 text-white font-medium text-base md:text-sm h-12 md:h-10"
-          >
-            <Search className="mr-2 flex-shrink-0" size={20} />
+          <Button type="submit" className="w-full bg-primary hover:bg-primary-dark text-base md:text-sm h-11 md:h-10">
+            <Search className="mr-2" size={20} />
             Rechercher
           </Button>
         </div>
