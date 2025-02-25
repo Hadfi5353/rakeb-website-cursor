@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, MapPin, Search } from "lucide-react";
@@ -12,11 +11,11 @@ import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { moroccanCities } from "@/lib/data/moroccan-cities";
 import { DateRange } from "react-day-picker";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const SearchBar = () => {
   const navigate = useNavigate();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [location, setLocation] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredCities, setFilteredCities] = useState<string[]>([]);
