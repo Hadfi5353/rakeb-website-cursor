@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, MapPin, Search } from "lucide-react";
@@ -85,7 +86,7 @@ const SearchBar = () => {
           {showSuggestions && filteredCities.length > 0 && (
             <div 
               ref={suggestionRef}
-              className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-[50vh] md:max-h-60 overflow-auto z-50"
+              className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-[40vh] overflow-auto z-[100] md:max-h-60"
             >
               {filteredCities.map((city) => (
                 <button
@@ -131,8 +132,8 @@ const SearchBar = () => {
               </Button>
             </PopoverTrigger>
             <PopoverContent 
-              className="w-screen md:w-auto p-0" 
-              align={isMobile ? "center" : "start"}
+              className="w-[calc(100vw-2rem)] md:w-auto p-0" 
+              align="start"
               side={isMobile ? "bottom" : undefined}
               sideOffset={isMobile ? 0 : 4}
             >
