@@ -1,7 +1,9 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
 import { 
   Car, 
   Calendar, 
@@ -15,10 +17,9 @@ import {
   CheckCircle,
   PiggyBank,
   Key,
-  BadgeCheck
+  BadgeCheck,
+  Calculator,
 } from "lucide-react";
-import FAQ from "@/components/FAQ";
-import Testimonials from "@/components/Testimonials";
 
 const steps = [
   {
@@ -67,6 +68,21 @@ const benefits = [
 ];
 
 const BecomeOwner = () => {
+  const [daysPerMonth, setDaysPerMonth] = useState(15);
+  const [pricePerDay, setPricePerDay] = useState(300);
+  const [carValue, setCarValue] = useState(150000);
+
+  const calculateMonthlyRevenue = () => {
+    return daysPerMonth * pricePerDay;
+  };
+
+  const calculateAnnualRevenue = () => {
+    return calculateMonthlyRevenue() * 12;
+  };
+
+  const monthlyRevenue = calculateMonthlyRevenue();
+  const annualRevenue = calculateAnnualRevenue();
+
   return (
     <div className="min-h-screen">
       {/* Hero Section avec fond dégradé */}
@@ -91,9 +107,15 @@ const BecomeOwner = () => {
                   <ArrowRight className="ml-2" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link to="/how-it-works">
+              <Button 
+                asChild 
+                size="lg" 
+                variant="outline"
+                onClick={() => document.getElementById('revenue-calculator')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                <Link to="#revenue-calculator">
                   Calculer mes revenus
+                  <Calculator className="ml-2 w-4 h-4" />
                 </Link>
               </Button>
             </div>
@@ -223,6 +245,117 @@ const BecomeOwner = () => {
       {/* Témoignages */}
       <section className="py-24 bg-white">
         <Testimonials />
+      </section>
+
+      {/* Calculateur de revenus */}
+      <section id="revenue-calculator" className="py-24 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-16">
+              <span className="text-primary font-semibold">Simulateur de revenus</span>
+              <h2 className="text-3xl font-bold mt-2 mb-4">
+                Calculez vos revenus potentiels
+              </h2>
+              <p className="text-gray-600">
+                Estimez rapidement combien vous pourriez gagner en louant votre véhicule sur Rakeb
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              <Card className="p-6">
+                <CardContent className="space-y-8 pt-4">
+                  <div className="space-y-4">
+                    <Label>Valeur de votre véhicule</Label>
+                    <div className="flex items-center gap-4">
+                      <Slider
+                        value={[carValue]}
+                        onValueChange={(value) => setCarValue(value[0])}
+                        max={500000}
+                        step={10000}
+                        className="flex-1"
+                      />
+                      <span className="text-lg font-semibold min-w-[100px] text-right">
+                        {carValue.toLocaleString()} DH
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <Label>Prix par jour</Label>
+                    <div className="flex items-center gap-4">
+                      <Slider
+                        value={[pricePerDay]}
+                        onValueChange={(value) => setPricePerDay(value[0])}
+                        max={1000}
+                        step={50}
+                        className="flex-1"
+                      />
+                      <span className="text-lg font-semibold min-w-[100px] text-right">
+                        {pricePerDay} DH
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <Label>Jours de location par mois</Label>
+                    <div className="flex items-center gap-4">
+                      <Slider
+                        value={[daysPerMonth]}
+                        onValueChange={(value) => setDaysPerMonth(value[0])}
+                        max={30}
+                        step={1}
+                        className="flex-1"
+                      />
+                      <span className="text-lg font-semibold min-w-[100px] text-right">
+                        {daysPerMonth} jours
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="p-6 bg-gradient-to-br from-primary/5 to-primary/10">
+                <CardContent className="space-y-8 pt-4">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-primary mb-2">
+                      {monthlyRevenue.toLocaleString()} DH
+                    </div>
+                    <div className="text-gray-600">Revenus mensuels estimés</div>
+                  </div>
+
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-gray-900 mb-2">
+                      {annualRevenue.toLocaleString()} DH
+                    </div>
+                    <div className="text-gray-600">Revenus annuels estimés</div>
+                  </div>
+
+                  <div className="space-y-4 pt-4">
+                    <div className="flex items-center gap-3 text-gray-600">
+                      <CheckCircle className="w-5 h-5 text-primary" />
+                      <span>Assurance tous risques incluse</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-gray-600">
+                      <CheckCircle className="w-5 h-5 text-primary" />
+                      <span>Paiements sécurisés garantis</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-gray-600">
+                      <CheckCircle className="w-5 h-5 text-primary" />
+                      <span>Support client 24/7</span>
+                    </div>
+                  </div>
+
+                  <Button size="lg" className="w-full" asChild>
+                    <Link to="/cars/add">
+                      Commencer maintenant
+                      <ArrowRight className="ml-2" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* FAQ */}
