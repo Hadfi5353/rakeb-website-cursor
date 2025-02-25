@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -69,12 +70,10 @@ const AddCar = () => {
       };
 
       await vehiclesApi.createVehicle(vehicleData);
-
       toast({
         title: "Succès",
         description: "Votre véhicule a été ajouté avec succès",
       });
-
       navigate("/");
     } catch (error) {
       toast({
@@ -87,34 +86,34 @@ const AddCar = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="inline-flex items-center text-sm text-gray-600 hover:text-primary transition-colors mb-8">
+    <div className="min-h-screen flex flex-col py-6 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-3xl mx-auto">
+        <Link to="/" className="inline-flex items-center text-sm text-gray-600 hover:text-primary transition-colors mb-4">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour à l'accueil
         </Link>
 
-        <Card>
-          <CardHeader>
+        <Card className="w-full">
+          <CardHeader className="pb-4">
             <CardTitle className="text-2xl">Mettre un véhicule en location</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <ImageUpload />
-              
-              <VehicleBasicInfo
-                brand={formData.brand}
-                model={formData.model}
-                onBrandChange={(value) => setFormData({ ...formData, brand: value })}
-                onModelChange={(value) => setFormData({ ...formData, model: value })}
-              />
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <VehicleBasicInfo
+                  brand={formData.brand}
+                  model={formData.model}
+                  onBrandChange={(value) => setFormData({ ...formData, brand: value })}
+                  onModelChange={(value) => setFormData({ ...formData, model: value })}
+                />
 
-              <VehicleDetails
-                year={formData.year}
-                price={formData.price}
-                onYearChange={(value) => setFormData({ ...formData, year: value })}
-                onPriceChange={(value) => setFormData({ ...formData, price: value })}
-              />
+                <VehicleDetails
+                  year={formData.year}
+                  price={formData.price}
+                  onYearChange={(value) => setFormData({ ...formData, year: value })}
+                  onPriceChange={(value) => setFormData({ ...formData, price: value })}
+                />
+              </div>
 
               <LocationInput
                 location={formData.location}
@@ -133,8 +132,10 @@ const AddCar = () => {
                 onDescriptionChange={(value) => setFormData({ ...formData, description: value })}
               />
 
-              <div className="flex justify-end space-x-4">
-                <Button type="button" variant="outline" onClick={() => window.history.back()}>
+              <ImageUpload />
+
+              <div className="flex justify-end gap-3">
+                <Button type="button" variant="outline" onClick={() => navigate(-1)}>
                   Annuler
                 </Button>
                 <Button type="submit">

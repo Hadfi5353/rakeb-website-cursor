@@ -70,19 +70,17 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="h-screen flex flex-col justify-center py-6 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <Link to="/" className="flex items-center text-sm text-gray-600 mb-8 hover:text-primary transition-colors">
+        <Link to="/" className="flex items-center text-sm text-gray-600 mb-4 hover:text-primary transition-colors">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour à l'accueil
         </Link>
         
-        <div className="text-center space-y-6">
-          <div className="flex justify-center">
-            <Car className="h-12 w-12 text-primary" />
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900">Connectez-vous à Rakeb</h2>
-          <p className="mt-2 text-gray-600">
+        <div className="text-center space-y-2">
+          <Car className="h-12 w-12 text-primary mx-auto" />
+          <h2 className="text-2xl font-bold text-gray-900">Connexion à Rakeb</h2>
+          <p className="text-sm text-gray-600">
             Pas encore inscrit ?{" "}
             <Link to="/auth/register" className="text-primary hover:text-primary-dark transition-colors font-medium">
               Créer un compte
@@ -91,20 +89,17 @@ const Login = () => {
         </div>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+      <div className="mt-4 sm:mx-auto sm:w-full sm:max-w-md">
         <Card className="bg-white/70 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle>Connexion</CardTitle>
+          <CardHeader className="space-y-1 pb-4">
+            <CardTitle className="text-xl">Connexion</CardTitle>
             <CardDescription>
               Entrez vos identifiants pour accéder à votre compte
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email
-                </label>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
                 <div className="relative">
                   <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                   <Input
@@ -120,15 +115,13 @@ const Login = () => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Mot de passe
-                </label>
+              <div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                   <Input
                     id="password"
                     type="password"
+                    placeholder="Votre mot de passe"
                     className="pl-10"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -136,8 +129,8 @@ const Login = () => {
                     disabled={isLoading}
                   />
                 </div>
-                <div className="flex items-center justify-between">
-                  <Link to="/auth/forgot-password" className="text-sm text-primary hover:text-primary-dark transition-colors">
+                <div className="flex justify-end mt-2">
+                  <Link to="/auth/forgot-password" className="text-xs text-primary hover:text-primary-dark transition-colors">
                     Mot de passe oublié ?
                   </Link>
                 </div>
@@ -146,34 +139,32 @@ const Login = () => {
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Connexion en cours..." : "Se connecter"}
               </Button>
-            </form>
 
-            <div className="mt-6">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-200" />
                 </div>
-                <div className="relative flex justify-center text-sm">
+                <div className="relative flex justify-center text-xs">
                   <span className="px-2 bg-white text-gray-500">Ou continuer avec</span>
                 </div>
               </div>
 
-              <div className="mt-6 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
                 <Button variant="outline" className="w-full" type="button">
                   <img src="https://authjs.dev/img/providers/google.svg" alt="Google" className="w-5 h-5 mr-2" />
-                  Continuer avec Google
+                  Google
                 </Button>
                 <Button variant="outline" className="w-full" type="button">
                   <img src="https://authjs.dev/img/providers/facebook.svg" alt="Facebook" className="w-5 h-5 mr-2" />
-                  Continuer avec Facebook
+                  Facebook
                 </Button>
               </div>
-            </div>
 
-            <div className="mt-6 flex items-center justify-center space-x-2 text-sm text-gray-600">
-              <Shield className="w-4 h-4" />
-              <span>Connexion sécurisée via SSL</span>
-            </div>
+              <div className="flex items-center justify-center space-x-2 text-xs text-gray-600">
+                <Shield className="w-4 h-4" />
+                <span>Connexion sécurisée via SSL</span>
+              </div>
+            </form>
           </CardContent>
         </Card>
       </div>
