@@ -86,96 +86,100 @@ const AddCar = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <Link 
-            to="/" 
-            className="inline-flex items-center text-sm text-gray-600 hover:text-primary transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Retour à l'accueil
-          </Link>
-          <div className="flex items-center gap-2 text-primary">
-            <Car className="w-5 h-5" />
-            <span className="font-medium">Rakeb</span>
-          </div>
+    <div className="h-screen overflow-hidden flex flex-col bg-gradient-to-b from-gray-50 to-white">
+      {/* Header */}
+      <div className="px-4 py-3 flex items-center justify-between border-b bg-white">
+        <Link 
+          to="/" 
+          className="inline-flex items-center text-sm text-gray-600 hover:text-primary transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Retour
+        </Link>
+        <div className="flex items-center gap-2 text-primary">
+          <Car className="w-5 h-5" />
+          <span className="font-medium">Rakeb</span>
         </div>
+      </div>
 
-        <Card className="bg-white shadow-lg border-0">
-          <CardHeader className="text-center border-b bg-gray-50/50 rounded-t-lg">
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
-              Mettre un véhicule en location
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="space-y-6">
-                <div className="grid sm:grid-cols-2 gap-6">
-                  <div className="space-y-6">
-                    <VehicleBasicInfo
-                      brand={formData.brand}
-                      model={formData.model}
-                      onBrandChange={(value) => setFormData({ ...formData, brand: value })}
-                      onModelChange={(value) => setFormData({ ...formData, model: value })}
-                    />
-                    <VehicleSpecs
-                      transmission={formData.transmission}
-                      fuel={formData.fuel}
-                      onTransmissionChange={(value) => setFormData({ ...formData, transmission: value })}
-                      onFuelChange={(value) => setFormData({ ...formData, fuel: value })}
-                    />
-                  </div>
-                  <div className="space-y-6">
-                    <VehicleDetails
-                      year={formData.year}
-                      price={formData.price}
-                      onYearChange={(value) => setFormData({ ...formData, year: value })}
-                      onPriceChange={(value) => setFormData({ ...formData, price: value })}
-                    />
-                    <LocationInput
-                      location={formData.location}
-                      onLocationChange={(value) => setFormData({ ...formData, location: value })}
-                    />
-                  </div>
+      {/* Main Content */}
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full p-4">
+          <Card className="h-full bg-white shadow-sm border-0 flex flex-col">
+            <CardHeader className="py-3 border-b bg-gray-50/50">
+              <CardTitle className="text-xl font-semibold">
+                Mettre un véhicule en location
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-auto p-4">
+              <form onSubmit={handleSubmit} className="h-full grid grid-cols-2 gap-4">
+                {/* Left Column */}
+                <div className="space-y-4">
+                  <VehicleBasicInfo
+                    brand={formData.brand}
+                    model={formData.model}
+                    onBrandChange={(value) => setFormData({ ...formData, brand: value })}
+                    onModelChange={(value) => setFormData({ ...formData, model: value })}
+                  />
+                  <VehicleDetails
+                    year={formData.year}
+                    price={formData.price}
+                    onYearChange={(value) => setFormData({ ...formData, year: value })}
+                    onPriceChange={(value) => setFormData({ ...formData, price: value })}
+                  />
+                  <LocationInput
+                    location={formData.location}
+                    onLocationChange={(value) => setFormData({ ...formData, location: value })}
+                  />
                 </div>
 
-                <VehicleDescription
-                  description={formData.description}
-                  onDescriptionChange={(value) => setFormData({ ...formData, description: value })}
-                />
+                {/* Right Column */}
+                <div className="space-y-4">
+                  <VehicleSpecs
+                    transmission={formData.transmission}
+                    fuel={formData.fuel}
+                    onTransmissionChange={(value) => setFormData({ ...formData, transmission: value })}
+                    onFuelChange={(value) => setFormData({ ...formData, fuel: value })}
+                  />
+                  <VehicleDescription
+                    description={formData.description}
+                    onDescriptionChange={(value) => setFormData({ ...formData, description: value })}
+                  />
+                  <div className="bg-gray-50/50 rounded-lg p-3">
+                    <ImageUpload />
+                  </div>
+                </div>
+              </form>
+            </CardContent>
 
-                <div className="border rounded-lg p-6 bg-gray-50/50">
-                  <h3 className="text-lg font-medium mb-4">Photos du véhicule</h3>
-                  <ImageUpload />
+            {/* Footer */}
+            <div className="p-4 border-t mt-auto bg-white">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">
+                  En continuant, vous acceptez nos{" "}
+                  <Link to="/legal" className="text-primary hover:text-primary-dark">
+                    conditions d'utilisation
+                  </Link>
+                </span>
+                <div className="flex gap-3">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => navigate(-1)}
+                    size="sm"
+                  >
+                    Annuler
+                  </Button>
+                  <Button 
+                    type="submit"
+                    size="sm"
+                  >
+                    Publier
+                  </Button>
                 </div>
               </div>
-
-              <div className="flex justify-end gap-4 pt-4 border-t">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => navigate(-1)}
-                  className="w-32"
-                >
-                  Annuler
-                </Button>
-                <Button 
-                  type="submit"
-                  className="w-32"
-                >
-                  Publier
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        <div className="mt-6 text-center text-sm text-gray-500">
-          En publiant votre annonce, vous acceptez nos{" "}
-          <Link to="/legal" className="text-primary hover:text-primary-dark">
-            conditions d'utilisation
-          </Link>
+            </div>
+          </Card>
         </div>
       </div>
     </div>
