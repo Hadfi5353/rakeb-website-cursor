@@ -184,13 +184,13 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div className="fixed inset-0 z-[100] md:hidden">
           <div 
             className="fixed inset-0 bg-black/20 backdrop-blur-sm"
             onClick={() => setIsOpen(false)}
           />
           <div className="fixed inset-y-0 right-0 w-full max-w-xs bg-white shadow-xl">
-            <div className="flex flex-col h-full">
+            <div className="flex flex-col h-full overflow-y-auto">
               {user ? (
                 <div className="px-6 py-6">
                   <div className="flex items-center space-x-3 mb-6">
