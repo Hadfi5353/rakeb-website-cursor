@@ -20,6 +20,8 @@ import {
   BadgeCheck,
   Calculator,
 } from "lucide-react";
+import FAQ from "@/components/FAQ";
+import Testimonials from "@/components/Testimonials";
 
 const steps = [
   {
