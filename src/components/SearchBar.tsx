@@ -1,5 +1,5 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, MapPin, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,18 +21,7 @@ const SearchBar = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredCities, setFilteredCities] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const suggestionRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (suggestionRef.current && !suggestionRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const handleLocationChange = (value: string) => {
     setLocation(value);
@@ -67,7 +56,7 @@ const SearchBar = () => {
   };
 
   return (
-    <form onSubmit={handleSearch} className="bg-white rounded-xl shadow-lg overflow-visible">
+    <form onSubmit={handleSearch} className="bg-white rounded-xl shadow-lg">
       <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-100">
         <div className="flex-1 p-4 relative">
           <Label htmlFor="location" className="sr-only">Lieu</Label>
@@ -84,15 +73,12 @@ const SearchBar = () => {
             />
           </div>
           {showSuggestions && filteredCities.length > 0 && (
-            <div 
-              ref={suggestionRef}
-              className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-[40vh] overflow-auto z-[100] md:max-h-60"
-            >
+            <div className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
               {filteredCities.map((city) => (
                 <button
                   key={city}
                   type="button"
-                  className="w-full px-4 py-3 md:py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors text-base md:text-sm"
+                  className="w-full px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors"
                   onClick={() => handleCitySelect(city)}
                 >
                   <div className="flex items-center gap-2">
@@ -107,7 +93,7 @@ const SearchBar = () => {
         
         <div className="flex-1 p-4">
           <Label htmlFor="dates" className="sr-only">Dates</Label>
-          <Popover>
+          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -132,21 +118,25 @@ const SearchBar = () => {
               </Button>
             </PopoverTrigger>
             <PopoverContent 
-              className="w-[calc(100vw-2rem)] md:w-auto p-0" 
-              align="start"
-              side={isMobile ? "bottom" : undefined}
-              sideOffset={isMobile ? 0 : 4}
+              className="bg-white p-0 w-screen md:w-auto fixed md:relative left-0 right-0 bottom-0 md:bottom-auto rounded-t-xl md:rounded-lg shadow-lg z-50"
+              align="center"
             >
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={dateRange?.from}
-                selected={dateRange}
-                onSelect={setDateRange}
-                numberOfMonths={isMobile ? 1 : 2}
-                locale={fr}
-                className="p-3"
-              />
+              <div className="p-3">
+                <Calendar
+                  initialFocus
+                  mode="range"
+                  defaultMonth={dateRange?.from}
+                  selected={dateRange}
+                  onSelect={(newDateRange) => {
+                    setDateRange(newDateRange);
+                    if (newDateRange?.to) {
+                      setIsCalendarOpen(false);
+                    }
+                  }}
+                  numberOfMonths={isMobile ? 1 : 2}
+                  locale={fr}
+                />
+              </div>
             </PopoverContent>
           </Popover>
         </div>
