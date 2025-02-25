@@ -11,19 +11,16 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { moroccanCities } from "@/lib/data/moroccan-cities";
+import { DateRange } from "react-day-picker";
+import { useMobile } from "@/hooks/use-mobile";
 
 const SearchBar = () => {
   const navigate = useNavigate();
+  const isMobile = useMobile();
   const [location, setLocation] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredCities, setFilteredCities] = useState<string[]>([]);
-  const [dateRange, setDateRange] = useState<{
-    from: Date | undefined;
-    to: Date | undefined;
-  }>({
-    from: undefined,
-    to: undefined,
-  });
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const suggestionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -58,7 +55,7 @@ const SearchBar = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const formattedDates = dateRange.from && dateRange.to
+    const formattedDates = dateRange?.from && dateRange?.to
       ? `${format(dateRange.from, 'yyyy-MM-dd')}:${format(dateRange.to, 'yyyy-MM-dd')}`
       : '';
     
@@ -89,13 +86,13 @@ const SearchBar = () => {
           {showSuggestions && filteredCities.length > 0 && (
             <div 
               ref={suggestionRef}
-              className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-60 overflow-auto z-50"
+              className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-[50vh] md:max-h-60 overflow-auto z-50"
             >
               {filteredCities.map((city) => (
                 <button
                   key={city}
                   type="button"
-                  className="w-full px-4 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors"
+                  className="w-full px-4 py-3 md:py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors text-base md:text-sm"
                   onClick={() => handleCitySelect(city)}
                 >
                   <div className="flex items-center gap-2">
@@ -116,11 +113,11 @@ const SearchBar = () => {
                 variant="outline"
                 className={cn(
                   "w-full justify-start border-none text-left font-normal shadow-none hover:bg-transparent",
-                  !dateRange.from && "text-muted-foreground"
+                  !dateRange?.from && "text-muted-foreground"
                 )}
               >
                 <CalendarDays className="mr-3 h-5 w-5 text-primary" />
-                {dateRange.from ? (
+                {dateRange?.from ? (
                   dateRange.to ? (
                     <>
                       {format(dateRange.from, "d MMM", { locale: fr })} -{" "}
@@ -134,22 +131,28 @@ const SearchBar = () => {
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent 
+              className="w-screen md:w-auto p-0" 
+              align={isMobile ? "center" : "start"}
+              side={isMobile ? "bottom" : undefined}
+              sideOffset={isMobile ? 0 : 4}
+            >
               <Calendar
                 initialFocus
                 mode="range"
-                defaultMonth={dateRange.from}
+                defaultMonth={dateRange?.from}
                 selected={dateRange}
                 onSelect={setDateRange}
-                numberOfMonths={2}
+                numberOfMonths={isMobile ? 1 : 2}
                 locale={fr}
+                className="p-3"
               />
             </PopoverContent>
           </Popover>
         </div>
         
         <div className="flex items-center p-4">
-          <Button type="submit" className="w-full md:w-auto bg-primary hover:bg-primary-dark">
+          <Button type="submit" className="w-full bg-primary hover:bg-primary-dark text-base md:text-sm h-11 md:h-10">
             <Search className="mr-2" size={20} />
             Rechercher
           </Button>
