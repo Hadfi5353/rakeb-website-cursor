@@ -56,7 +56,7 @@ const SearchBar = () => {
   };
 
   return (
-    <form onSubmit={handleSearch} className="bg-white rounded-xl shadow-lg relative">
+    <form onSubmit={handleSearch} className="bg-white rounded-xl shadow-lg">
       <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-100">
         <div className="flex-1 p-4 relative">
           <Label htmlFor="location" className="sr-only">Lieu</Label>
@@ -118,16 +118,10 @@ const SearchBar = () => {
               </Button>
             </PopoverTrigger>
             <PopoverContent 
-              className={cn(
-                "bg-white p-0 z-[100]",
-                isMobile ? "fixed inset-x-0 bottom-0 rounded-t-xl w-full" : "relative w-auto rounded-lg"
-              )}
+              className="bg-white p-0 w-screen md:w-auto fixed md:relative left-0 right-0 bottom-0 md:bottom-auto rounded-t-xl md:rounded-lg shadow-lg z-50"
               align="center"
             >
-              <div className={cn(
-                "p-3",
-                isMobile && "pb-8" // Ajout de padding en bas sur mobile pour éviter les problèmes de navigation
-              )}>
+              <div className="p-3">
                 <Calendar
                   initialFocus
                   mode="range"
@@ -141,7 +135,6 @@ const SearchBar = () => {
                   }}
                   numberOfMonths={isMobile ? 1 : 2}
                   locale={fr}
-                  className="mx-auto"
                 />
               </div>
             </PopoverContent>
