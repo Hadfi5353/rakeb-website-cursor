@@ -1,7 +1,7 @@
 
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { CalendarDays, MapPin, Search, X } from "lucide-react";
+import { CalendarDays, MapPin, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -93,7 +93,7 @@ const SearchBar = () => {
         
         <div className="flex-1 p-4">
           <Label htmlFor="dates" className="sr-only">Dates</Label>
-          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
+          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -119,32 +119,15 @@ const SearchBar = () => {
             </PopoverTrigger>
             <PopoverContent 
               className={cn(
-                isMobile ? 
-                "fixed inset-x-0 bottom-0 w-full bg-white rounded-t-xl shadow-lg" : 
-                "relative w-auto rounded-lg bg-white"
+                "bg-white p-0 z-[100]",
+                isMobile ? "fixed inset-x-0 bottom-0 rounded-t-xl w-full" : "relative w-auto rounded-lg"
               )}
-              style={{
-                maxHeight: isMobile ? '85vh' : 'none',
-                overflowY: isMobile ? 'auto' : 'visible'
-              }}
               align="center"
             >
               <div className={cn(
-                "relative",
-                isMobile && "pt-2 pb-8"
+                "p-3",
+                isMobile && "pb-8" // Ajout de padding en bas sur mobile pour éviter les problèmes de navigation
               )}>
-                {isMobile && (
-                  <div className="absolute right-4 top-2 z-50">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setIsCalendarOpen(false)}
-                      className="h-8 w-8"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
                 <Calendar
                   initialFocus
                   mode="range"
