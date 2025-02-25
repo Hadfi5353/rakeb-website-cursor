@@ -246,7 +246,10 @@ const BecomeOwner = () => {
 
       {/* Témoignages */}
       <section className="py-24 bg-white">
-        <Testimonials />
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold">Témoignages</h2>
+          <p className="text-gray-600">Chargement des témoignages...</p>
+        </div>
       </section>
 
       {/* Calculateur de revenus */}
