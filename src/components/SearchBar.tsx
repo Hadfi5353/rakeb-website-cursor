@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, MapPin, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -56,7 +56,7 @@ const SearchBar = () => {
   };
 
   return (
-    <form onSubmit={handleSearch} className="bg-white rounded-xl shadow-lg relative">
+    <form onSubmit={handleSearch} className="bg-white rounded-xl shadow-lg">
       <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-100">
         <div className="flex-1 p-4 relative">
           <Label htmlFor="location" className="sr-only">Lieu</Label>
@@ -93,48 +93,52 @@ const SearchBar = () => {
         
         <div className="flex-1 p-4">
           <Label htmlFor="dates" className="sr-only">Dates</Label>
-          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
+          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
             <PopoverTrigger asChild>
               <Button
+                id="date-picker"
                 variant="outline"
                 className={cn(
                   "w-full justify-start border-none text-left font-normal shadow-none hover:bg-transparent",
                   !dateRange?.from && "text-muted-foreground"
                 )}
               >
-                <CalendarDays className="mr-3 h-5 w-5 text-primary" />
-                {dateRange?.from ? (
-                  dateRange.to ? (
-                    <>
-                      {format(dateRange.from, "d MMM", { locale: fr })} -{" "}
-                      {format(dateRange.to, "d MMM, yyyy", { locale: fr })}
-                    </>
+                <CalendarDays className="mr-3 h-5 w-5 text-primary shrink-0" />
+                <span className="truncate">
+                  {dateRange?.from ? (
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, "d MMM", { locale: fr })} -{" "}
+                        {format(dateRange.to, "d MMM, yyyy", { locale: fr })}
+                      </>
+                    ) : (
+                      format(dateRange.from, "d MMM, yyyy", { locale: fr })
+                    )
                   ) : (
-                    format(dateRange.from, "d MMM, yyyy", { locale: fr })
-                  )
-                ) : (
-                  "Sélectionnez les dates"
-                )}
+                    "Sélectionnez les dates"
+                  )}
+                </span>
               </Button>
             </PopoverTrigger>
             <PopoverContent 
               className={cn(
-                isMobile ? 
-                "fixed inset-x-0 bottom-0 w-full bg-white rounded-t-xl shadow-lg" : 
-                "relative w-auto rounded-lg bg-white"
+                "p-0",
+                isMobile 
+                  ? "fixed inset-x-0 bottom-0 w-full rounded-t-xl" 
+                  : "w-auto relative rounded-lg"
               )}
               style={{
-                maxHeight: isMobile ? '85vh' : 'none',
-                overflowY: isMobile ? 'auto' : 'visible'
+                maxHeight: isMobile ? '90vh' : 'auto'
               }}
-              align="center"
+              align="start"
             >
               <div className={cn(
-                "relative",
-                isMobile && "pt-2 pb-8"
+                "p-3",
+                isMobile && "pb-8"
               )}>
                 {isMobile && (
-                  <div className="absolute right-4 top-2 z-50">
+                  <div className="flex justify-between items-center mb-2 px-1">
+                    <h2 className="text-sm font-medium">Sélectionnez les dates</h2>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -146,18 +150,12 @@ const SearchBar = () => {
                   </div>
                 )}
                 <Calendar
-                  initialFocus
                   mode="range"
-                  defaultMonth={dateRange?.from}
                   selected={dateRange}
-                  onSelect={(newDateRange) => {
-                    setDateRange(newDateRange);
-                    if (newDateRange?.to) {
-                      setIsCalendarOpen(false);
-                    }
-                  }}
+                  onSelect={setDateRange}
                   numberOfMonths={isMobile ? 1 : 2}
                   locale={fr}
+                  showOutsideDays={true}
                   className="mx-auto"
                 />
               </div>
