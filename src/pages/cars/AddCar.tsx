@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Car } from "lucide-react";
 import { vehiclesApi } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -86,65 +86,97 @@ const AddCar = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col py-6 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-3xl mx-auto">
-        <Link to="/" className="inline-flex items-center text-sm text-gray-600 hover:text-primary transition-colors mb-4">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Retour à l'accueil
-        </Link>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <Link 
+            to="/" 
+            className="inline-flex items-center text-sm text-gray-600 hover:text-primary transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Retour à l'accueil
+          </Link>
+          <div className="flex items-center gap-2 text-primary">
+            <Car className="w-5 h-5" />
+            <span className="font-medium">Rakeb</span>
+          </div>
+        </div>
 
-        <Card className="w-full">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-2xl">Mettre un véhicule en location</CardTitle>
+        <Card className="bg-white shadow-lg border-0">
+          <CardHeader className="text-center border-b bg-gray-50/50 rounded-t-lg">
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+              Mettre un véhicule en location
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid sm:grid-cols-2 gap-4">
-                <VehicleBasicInfo
-                  brand={formData.brand}
-                  model={formData.model}
-                  onBrandChange={(value) => setFormData({ ...formData, brand: value })}
-                  onModelChange={(value) => setFormData({ ...formData, model: value })}
+          <CardContent className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="space-y-6">
+                <div className="grid sm:grid-cols-2 gap-6">
+                  <div className="space-y-6">
+                    <VehicleBasicInfo
+                      brand={formData.brand}
+                      model={formData.model}
+                      onBrandChange={(value) => setFormData({ ...formData, brand: value })}
+                      onModelChange={(value) => setFormData({ ...formData, model: value })}
+                    />
+                    <VehicleSpecs
+                      transmission={formData.transmission}
+                      fuel={formData.fuel}
+                      onTransmissionChange={(value) => setFormData({ ...formData, transmission: value })}
+                      onFuelChange={(value) => setFormData({ ...formData, fuel: value })}
+                    />
+                  </div>
+                  <div className="space-y-6">
+                    <VehicleDetails
+                      year={formData.year}
+                      price={formData.price}
+                      onYearChange={(value) => setFormData({ ...formData, year: value })}
+                      onPriceChange={(value) => setFormData({ ...formData, price: value })}
+                    />
+                    <LocationInput
+                      location={formData.location}
+                      onLocationChange={(value) => setFormData({ ...formData, location: value })}
+                    />
+                  </div>
+                </div>
+
+                <VehicleDescription
+                  description={formData.description}
+                  onDescriptionChange={(value) => setFormData({ ...formData, description: value })}
                 />
 
-                <VehicleDetails
-                  year={formData.year}
-                  price={formData.price}
-                  onYearChange={(value) => setFormData({ ...formData, year: value })}
-                  onPriceChange={(value) => setFormData({ ...formData, price: value })}
-                />
+                <div className="border rounded-lg p-6 bg-gray-50/50">
+                  <h3 className="text-lg font-medium mb-4">Photos du véhicule</h3>
+                  <ImageUpload />
+                </div>
               </div>
 
-              <LocationInput
-                location={formData.location}
-                onLocationChange={(value) => setFormData({ ...formData, location: value })}
-              />
-
-              <VehicleSpecs
-                transmission={formData.transmission}
-                fuel={formData.fuel}
-                onTransmissionChange={(value) => setFormData({ ...formData, transmission: value })}
-                onFuelChange={(value) => setFormData({ ...formData, fuel: value })}
-              />
-
-              <VehicleDescription
-                description={formData.description}
-                onDescriptionChange={(value) => setFormData({ ...formData, description: value })}
-              />
-
-              <ImageUpload />
-
-              <div className="flex justify-end gap-3">
-                <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+              <div className="flex justify-end gap-4 pt-4 border-t">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => navigate(-1)}
+                  className="w-32"
+                >
                   Annuler
                 </Button>
-                <Button type="submit">
-                  Publier l'annonce
+                <Button 
+                  type="submit"
+                  className="w-32"
+                >
+                  Publier
                 </Button>
               </div>
             </form>
           </CardContent>
         </Card>
+
+        <div className="mt-6 text-center text-sm text-gray-500">
+          En publiant votre annonce, vous acceptez nos{" "}
+          <Link to="/legal" className="text-primary hover:text-primary-dark">
+            conditions d'utilisation
+          </Link>
+        </div>
       </div>
     </div>
   );
