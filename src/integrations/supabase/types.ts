@@ -9,6 +9,113 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      addresses: {
+        Row: {
+          city: string
+          country: string
+          created_at: string
+          id: string
+          street: string
+          updated_at: string
+          user_id: string | null
+          zip_code: string
+        }
+        Insert: {
+          city: string
+          country?: string
+          created_at?: string
+          id?: string
+          street: string
+          updated_at?: string
+          user_id?: string | null
+          zip_code: string
+        }
+        Update: {
+          city?: string
+          country?: string
+          created_at?: string
+          id?: string
+          street?: string
+          updated_at?: string
+          user_id?: string | null
+          zip_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "addresses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bank_information: Json | null
+          birthdate: string | null
+          created_at: string
+          email_verified: boolean | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          notification_preferences: Json | null
+          phone: string | null
+          phone_verified: boolean | null
+          preferred_language: string | null
+          profile_completion: number | null
+          role: string | null
+          stats: Json | null
+          updated_at: string
+          verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bank_information?: Json | null
+          birthdate?: string | null
+          created_at?: string
+          email_verified?: boolean | null
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          notification_preferences?: Json | null
+          phone?: string | null
+          phone_verified?: boolean | null
+          preferred_language?: string | null
+          profile_completion?: number | null
+          role?: string | null
+          stats?: Json | null
+          updated_at?: string
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bank_information?: Json | null
+          birthdate?: string | null
+          created_at?: string
+          email_verified?: boolean | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          notification_preferences?: Json | null
+          phone?: string | null
+          phone_verified?: boolean | null
+          preferred_language?: string | null
+          profile_completion?: number | null
+          role?: string | null
+          stats?: Json | null
+          updated_at?: string
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+        }
+        Relationships: []
+      }
       user_documents: {
         Row: {
           created_at: string
@@ -107,7 +214,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_profile_completion: {
+        Args: {
+          profile_row: unknown
+        }
+        Returns: number
+      }
     }
     Enums: {
       document_status: "pending" | "approved" | "rejected"
@@ -117,6 +229,7 @@ export type Database = {
         | "vehicle_registration"
         | "insurance"
         | "proof_of_address"
+      verification_status: "pending" | "verified" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never

@@ -23,6 +23,22 @@ const Profile = () => {
     last_name: '',
     phone: '',
     role: 'renter',
+    phone_verified: false,
+    email_verified: false,
+    verification_status: 'pending',
+    preferred_language: 'fr',
+    notification_preferences: {
+      email: true,
+      sms: true,
+      push: true,
+    },
+    stats: {
+      total_rentals: 0,
+      rating: 0,
+      rating_count: 0,
+      reservation_compliance: 100,
+      acceptance_rate: 100,
+    },
   });
 
   useEffect(() => {

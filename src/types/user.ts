@@ -1,3 +1,4 @@
+
 export type UserRole = 'owner' | 'renter';
 export type DocumentType = 'driver_license' | 'identity_card' | 'passport' | 'bank_details' | 'selfie_with_id' | 'proof_of_address' | 'vehicle_registration' | 'insurance';
 export type VerificationStatus = 'pending' | 'verified' | 'rejected';
@@ -6,7 +7,7 @@ export type DocumentStatus = 'pending' | 'verified' | 'rejected';
 export interface Address {
   street: string;
   city: string;
-  zipCode: string;
+  zip_code: string;
   country: string;
 }
 

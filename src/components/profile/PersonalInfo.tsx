@@ -30,6 +30,17 @@ export const PersonalInfo = ({ profile, onProfileChange }: PersonalInfoProps) =>
           onChange={(e) => onProfileChange({ last_name: e.target.value })}
         />
       </div>
+      <div className="space-y-2 md:col-span-2">
+        <label htmlFor="birthdate" className="text-sm font-medium">
+          Date de naissance
+        </label>
+        <Input
+          id="birthdate"
+          type="date"
+          value={profile.birthdate || ''}
+          onChange={(e) => onProfileChange({ birthdate: e.target.value })}
+        />
+      </div>
     </div>
   );
 };
