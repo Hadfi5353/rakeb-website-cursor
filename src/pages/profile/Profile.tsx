@@ -4,13 +4,24 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
-import { UserProfile, UserRole } from '@/types/user';
+import { UserProfile, UserRole, DocumentType } from '@/types/user';
 import { AvatarSection } from '@/components/profile/AvatarSection';
 import { PersonalInfo } from '@/components/profile/PersonalInfo';
 import { ContactInfo } from '@/components/profile/ContactInfo';
 import { RoleSelection } from '@/components/profile/RoleSelection';
+import { VerificationStatus } from '@/components/profile/sections/VerificationStatus';
+import { ProfileCompletion } from '@/components/profile/sections/ProfileCompletion';
+import { DocumentsSection } from '@/components/profile/sections/DocumentsSection';
+import { UserStats } from '@/components/profile/sections/UserStats';
+import { NotificationPreferences } from '@/components/profile/sections/NotificationPreferences';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -50,46 +61,13 @@ const Profile = () => {
     checkDocuments();
   }, [user, navigate]);
 
-  const checkDocuments = async () => {
-    if (!user) return;
-
-    try {
-      const { data: documents, error } = await supabase
-        .from('user_documents')
-        .select('document_type, status')
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      const hasRequiredDocuments = documents?.some(doc => doc.status === 'approved');
-      
-      if (!hasRequiredDocuments) {
-        toast({
-          title: "Documents requis",
-          description: "Veuillez télécharger vos documents pour continuer",
-          action: (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => navigate('/documents/verification')}
-            >
-              Télécharger
-            </Button>
-          ),
-        });
-      }
-    } catch (error) {
-      console.error('Error checking documents:', error);
-    }
-  };
-
   const getProfile = async () => {
     try {
       if (!user) return;
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, addresses(*)')
         .eq('id', user.id)
         .single();
 
@@ -99,6 +77,7 @@ const Profile = () => {
         setProfile({
           ...data,
           email: user.email,
+          address: data.addresses?.[0],
         });
       }
     } catch (error) {
@@ -113,28 +92,86 @@ const Profile = () => {
     }
   };
 
+  const handleDocumentUpload = async (type: DocumentType, file: File) => {
+    try {
+      setUploading(true);
+      if (!user) return;
+
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user.id}/${type}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('user_documents')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('user_documents')
+        .getPublicUrl(filePath);
+
+      const { error: insertError } = await supabase
+        .from('user_documents')
+        .insert({
+          user_id: user.id,
+          document_type: type,
+          file_url: publicUrl,
+        });
+
+      if (insertError) throw insertError;
+
+      toast({
+        title: "Document téléversé",
+        description: "Votre document a été envoyé pour vérification",
+      });
+
+      checkDocuments();
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de téléverser le document",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const updateProfile = async () => {
     try {
       if (!user) return;
 
-      const updates = {
-        id: user.id,
-        ...profile,
-        updated_at: new Date().toISOString(),
-      };
-
-      const { error } = await supabase
+      const { address, ...profileData } = profile;
+      
+      // Mise à jour du profil
+      const { error: profileError } = await supabase
         .from('profiles')
-        .upsert(updates);
+        .upsert({
+          id: user.id,
+          ...profileData,
+          updated_at: new Date().toISOString(),
+        });
 
-      if (error) throw error;
+      if (profileError) throw profileError;
+
+      // Mise à jour de l'adresse
+      if (address) {
+        const { error: addressError } = await supabase
+          .from('addresses')
+          .upsert({
+            ...address,
+            user_id: user.id,
+          });
+
+        if (addressError) throw addressError;
+      }
 
       toast({
         title: "Succès",
         description: "Votre profil a été mis à jour",
       });
       
-      // Rediriger vers le tableau de bord approprié après la sauvegarde
       if (profile.role === 'owner') {
         navigate('/dashboard/owner');
       } else if (profile.role === 'renter') {
@@ -204,31 +241,70 @@ const Profile = () => {
     );
   }
 
+  const getMissingItems = () => {
+    const missing = [];
+    if (!profile.avatar_url) missing.push("Ajouter une photo de profil");
+    if (!profile.birthdate) missing.push("Ajouter votre date de naissance");
+    if (!profile.phone) missing.push("Ajouter votre numéro de téléphone");
+    if (!profile.address) missing.push("Ajouter votre adresse");
+    return missing;
+  };
+
   return (
-    <div className="container max-w-2xl mx-auto py-8 px-4 min-h-screen">
+    <div className="container max-w-4xl mx-auto py-8 px-4">
       <Card>
         <CardHeader>
-          <CardTitle>Profil</CardTitle>
-          <CardDescription>Gérez vos informations personnelles</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Mon Profil</CardTitle>
+              <CardDescription>Gérez vos informations personnelles</CardDescription>
+            </div>
+            <VerificationStatus
+              status={profile.verification_status || 'pending'}
+              role={profile.role || 'renter'}
+            />
+          </div>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-8">
+          <ProfileCompletion
+            completion={profile.profile_completion || 0}
+            missingItems={getMissingItems()}
+          />
+          
           <AvatarSection
             avatarUrl={profile.avatar_url}
             uploading={uploading}
             onUpload={uploadAvatar}
           />
+          
           <PersonalInfo
             profile={profile}
             onProfileChange={handleProfileChange}
           />
+          
           <ContactInfo
             profile={profile}
             onProfileChange={handleProfileChange}
           />
+          
           <RoleSelection
             currentRole={profile.role}
             onRoleChange={handleRoleChange}
           />
+          
+          <DocumentsSection
+            documents={[]}
+            role={profile.role || 'renter'}
+            onUpload={handleDocumentUpload}
+          />
+          
+          <UserStats stats={profile.stats!} />
+          
+          <NotificationPreferences
+            preferences={profile.notification_preferences!}
+            onChange={(prefs) => handleProfileChange({ notification_preferences: prefs })}
+          />
+          
           <Button onClick={updateProfile} className="w-full">
             Sauvegarder les modifications
           </Button>
