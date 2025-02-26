@@ -67,14 +67,6 @@ const Profile = () => {
     }
   };
 
-  useEffect(() => {
-    if (profile.role === 'owner') {
-      navigate('/dashboard/owner');
-    } else if (profile.role === 'renter') {
-      navigate('/dashboard/renter');
-    }
-  }, [profile.role, navigate]);
-
   const getProfile = async () => {
     try {
       if (!user) return;
@@ -125,6 +117,13 @@ const Profile = () => {
         title: "Succès",
         description: "Votre profil a été mis à jour",
       });
+      
+      // Rediriger vers le tableau de bord approprié après la sauvegarde
+      if (profile.role === 'owner') {
+        navigate('/dashboard/owner');
+      } else if (profile.role === 'renter') {
+        navigate('/dashboard/renter');
+      }
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
