@@ -242,4 +242,49 @@ const Profile = () => {
 
           {/* Contact Information */}
           <div className="space-y-4">
-            <div className="flex items-center space
+            <div className="flex items-center space-x-2">
+              <Mail className="w-5 h-5 text-gray-500" />
+              <span className="text-sm text-gray-600">{profile.email}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Phone className="w-5 h-5 text-gray-500" />
+              <Input
+                placeholder="Numéro de téléphone"
+                value={profile.phone || ''}
+                onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+              />
+            </div>
+          </div>
+
+          {/* Role Selection */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Je suis un</label>
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                variant={profile.role === 'renter' ? 'default' : 'outline'}
+                onClick={() => setProfile({ ...profile, role: 'renter' })}
+                className="w-full"
+              >
+                Locataire
+              </Button>
+              <Button
+                variant={profile.role === 'owner' ? 'default' : 'outline'}
+                onClick={() => setProfile({ ...profile, role: 'owner' })}
+                className="w-full"
+              >
+                Propriétaire
+              </Button>
+            </div>
+          </div>
+
+          {/* Save Button */}
+          <Button onClick={updateProfile} className="w-full">
+            Sauvegarder les modifications
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default Profile;
