@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -29,6 +28,7 @@ const Profile = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [documents, setDocuments] = useState<UserDocument[]>([]);
   const [profile, setProfile] = useState<Partial<UserProfile>>({
     first_name: '',
     last_name: '',
@@ -89,6 +89,30 @@ const Profile = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkDocuments = async () => {
+    try {
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('user_documents')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      if (data) {
+        setDocuments(data);
+      }
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de charger vos documents",
+      });
     }
   };
 
@@ -293,7 +317,7 @@ const Profile = () => {
           />
           
           <DocumentsSection
-            documents={[]}
+            documents={documents}
             role={profile.role || 'renter'}
             onUpload={handleDocumentUpload}
           />

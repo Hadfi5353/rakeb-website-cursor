@@ -10,15 +10,15 @@ interface DocumentsSectionProps {
 }
 
 export const DocumentsSection = ({ documents, role, onUpload }: DocumentsSectionProps) => {
-  const requiredDocuments = role === 'renter' 
+  const requiredDocuments: { type: DocumentType; label: string; description: string }[] = role === 'renter' 
     ? [
-        { type: 'driver_license', label: 'Permis de conduire', description: 'Recto-verso, en cours de validité' },
-        { type: 'identity_card', label: "Carte d'identité", description: 'Ou passeport en cours de validité' },
-        { type: 'selfie_with_id', label: "Selfie avec pièce d'identité", description: 'Pour éviter les fraudes' },
+        { type: 'driver_license' as DocumentType, label: 'Permis de conduire', description: 'Recto-verso, en cours de validité' },
+        { type: 'identity_card' as DocumentType, label: "Carte d'identité", description: 'Ou passeport en cours de validité' },
+        { type: 'selfie_with_id' as DocumentType, label: "Selfie avec pièce d'identité", description: 'Pour éviter les fraudes' },
       ]
     : [
-        { type: 'identity_card', label: "Carte d'identité", description: 'Ou passeport en cours de validité' },
-        { type: 'bank_details', label: 'RIB / IBAN', description: 'Pour recevoir vos paiements' },
+        { type: 'identity_card' as DocumentType, label: "Carte d'identité", description: 'Ou passeport en cours de validité' },
+        { type: 'bank_details' as DocumentType, label: 'RIB / IBAN', description: 'Pour recevoir vos paiements' },
       ];
 
   const getDocumentStatus = (type: DocumentType) => {
