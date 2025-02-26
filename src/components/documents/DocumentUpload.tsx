@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { Upload, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { DocumentType } from '@/types/user';
 
 interface Document {
-  type: 'driver_license' | 'identity_card' | 'vehicle_registration' | 'insurance' | 'proof_of_address';
+  type: DocumentType;
   label: string;
   description: string;
   required: boolean;
