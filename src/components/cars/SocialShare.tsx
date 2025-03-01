@@ -23,7 +23,7 @@ const SocialShare = ({ car, className = "" }: SocialShareProps) => {
   const shareText = `Découvrez ${car.name} à ${car.price}Dh/jour à ${car.location} sur Rakeb`;
 
   const handleShare = async (platform: string) => {
-    const shareUrls = {
+    const shareUrls: Record<string, string> = {
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
       twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
       whatsapp: `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`,
@@ -39,7 +39,9 @@ const SocialShare = ({ car, className = "" }: SocialShareProps) => {
       return;
     }
 
-    window.open(shareUrls[platform], "_blank", "width=600,height=400");
+    if (shareUrls[platform]) {
+      window.open(shareUrls[platform], "_blank", "width=600,height=400");
+    }
   };
 
   return (
@@ -50,20 +52,20 @@ const SocialShare = ({ car, className = "" }: SocialShareProps) => {
           Partager
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem onClick={() => handleShare("facebook")}>
+      <DropdownMenuContent align="end" className="w-48 bg-white">
+        <DropdownMenuItem onClick={() => handleShare("facebook")} className="cursor-pointer">
           <Facebook className="w-4 h-4 mr-2" />
           Facebook
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleShare("twitter")}>
+        <DropdownMenuItem onClick={() => handleShare("twitter")} className="cursor-pointer">
           <Twitter className="w-4 h-4 mr-2" />
           Twitter
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleShare("whatsapp")}>
+        <DropdownMenuItem onClick={() => handleShare("whatsapp")} className="cursor-pointer">
           <MessageCircle className="w-4 h-4 mr-2" />
           WhatsApp
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleShare("copy")}>
+        <DropdownMenuItem onClick={() => handleShare("copy")} className="cursor-pointer">
           <LinkIcon className="w-4 h-4 mr-2" />
           Copier le lien
         </DropdownMenuItem>

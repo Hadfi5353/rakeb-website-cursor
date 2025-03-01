@@ -15,7 +15,7 @@ interface PaymentMethodProps {
 export const PaymentMethod = ({ method, selected }: PaymentMethodProps) => {
   return (
     <div 
-      className={`p-3 border rounded-lg transition-all ${
+      className={`p-3 border rounded-lg transition-all cursor-pointer ${
         selected 
           ? 'border-primary bg-primary/5' 
           : 'hover:border-primary/50'
@@ -25,7 +25,7 @@ export const PaymentMethod = ({ method, selected }: PaymentMethodProps) => {
         <RadioGroupItem value={method.id} id={method.id} />
         <div className="flex items-center gap-2">
           <method.icon className="w-5 h-5 text-gray-600" />
-          <Label htmlFor={method.id} className="font-medium">
+          <Label htmlFor={method.id} className="font-medium cursor-pointer">
             {method.name}
           </Label>
         </div>

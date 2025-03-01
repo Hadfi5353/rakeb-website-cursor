@@ -164,7 +164,7 @@ const ReservationDialog = ({ isOpen, onClose, car }: ReservationDialogProps) => 
   const canContinue = () => {
     switch (currentStep) {
       case 1:
-        return startDate && endDate;
+        return !!startDate && !!endDate;
       case 2:
         return selectedInsurance !== "";
       case 3:
