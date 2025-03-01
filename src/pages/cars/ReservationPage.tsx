@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle, CreditCard, Info, Shield, Tag, Car, MapPin, Star, ArrowLeft, 
   Clock, Users, CalendarIcon, ChevronRight, AlertCircle, Zap } from "lucide-react";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const insuranceOptions = [
   {
@@ -71,6 +72,7 @@ const ReservationPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const car = location.state?.car;
+  const isMobile = useIsMobile();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [startDate, setStartDate] = useState<Date>();
@@ -245,14 +247,14 @@ const ReservationPage = () => {
                 <CalendarIcon className="w-4 h-4 text-primary" />
                 Dates de location
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className={`grid ${isMobile ? 'grid-cols-1 gap-6' : 'sm:grid-cols-2 gap-4'}`}>
                 <div>
                   <Label className="text-sm text-gray-600">Début</Label>
                   <Calendar
                     mode="single"
                     selected={startDate}
                     onSelect={setStartDate}
-                    className="rounded-md border"
+                    className={`rounded-md border ${isMobile ? 'w-full' : ''}`}
                     disabled={(date) => date < new Date()}
                   />
                 </div>
@@ -262,7 +264,7 @@ const ReservationPage = () => {
                     mode="single"
                     selected={endDate}
                     onSelect={setEndDate}
-                    className="rounded-md border"
+                    className={`rounded-md border ${isMobile ? 'w-full' : ''}`}
                     disabled={(date) => !startDate || date < startDate}
                   />
                 </div>
@@ -315,7 +317,7 @@ const ReservationPage = () => {
                     <div className="flex items-start space-x-3">
                       <RadioGroupItem value={option.id} id={option.id} />
                       <div className="flex-1">
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center flex-wrap">
                           <Label htmlFor={option.id} className="font-medium">
                             {option.name}
                           </Label>
@@ -325,14 +327,14 @@ const ReservationPage = () => {
                           {option.description}
                         </p>
                         <div className="flex items-center text-sm text-gray-600 mb-2">
-                          <AlertCircle className="w-4 h-4 mr-1 text-amber-500" />
+                          <AlertCircle className="w-4 h-4 mr-1 text-amber-500 flex-shrink-0" />
                           <span>Caution : {option.caution > 0 ? `${option.caution} Dh` : "Aucune caution"}</span>
                         </div>
                         <ul className="space-y-1">
                           {option.features.map((feature, index) => (
-                            <li key={index} className="text-sm text-gray-600 flex items-center gap-2">
-                              <CheckCircle className="w-3 h-3 text-primary" />
-                              {feature}
+                            <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
+                              <CheckCircle className="w-3 h-3 text-primary mt-1 flex-shrink-0" />
+                              <span>{feature}</span>
                             </li>
                           ))}
                         </ul>
@@ -359,9 +361,9 @@ const ReservationPage = () => {
                     }`}
                     onClick={() => toggleOption(option.id)}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center space-x-3">
-                        <div className={`w-5 h-5 rounded border flex items-center justify-center ${
+                        <div className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 ${
                           selectedOptions.includes(option.id) ? 'bg-primary border-primary' : 'border-gray-300'
                         }`}>
                           {selectedOptions.includes(option.id) && <CheckCircle className="w-4 h-4 text-white" />}
@@ -371,7 +373,7 @@ const ReservationPage = () => {
                           <p className="text-xs text-gray-500">{option.description}</p>
                         </div>
                       </div>
-                      <span className="text-sm font-medium">{option.price} Dh</span>
+                      <span className="text-sm font-medium ml-auto">{option.price} Dh</span>
                     </div>
                   </div>
                 ))}
@@ -406,7 +408,7 @@ const ReservationPage = () => {
                 Informations personnelles
               </h3>
               <div className="grid gap-4">
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className={`grid ${isMobile ? 'grid-cols-1' : 'sm:grid-cols-2'} gap-4`}>
                   <div className="space-y-2">
                     <Label htmlFor="fullName">Nom complet</Label>
                     <Input
@@ -451,7 +453,7 @@ const ReservationPage = () => {
                 <Tag className="w-4 h-4 text-primary" />
                 <Label>Code promo</Label>
               </div>
-              <div className="flex gap-2">
+              <div className={`flex gap-2 ${isMobile ? 'flex-col' : ''}`}>
                 <Input
                   placeholder="Ex: WELCOME"
                   value={promoCode}
@@ -461,7 +463,7 @@ const ReservationPage = () => {
                 <Button 
                   variant="outline"
                   onClick={applyPromoCode}
-                  className="whitespace-nowrap"
+                  className={`whitespace-nowrap ${isMobile ? 'w-full' : ''}`}
                   disabled={promoApplied || !promoCode}
                 >
                   Appliquer
@@ -469,7 +471,7 @@ const ReservationPage = () => {
               </div>
               {promoApplied && (
                 <div className="text-sm text-green-600 flex items-center">
-                  <CheckCircle className="w-4 h-4 mr-1" />
+                  <CheckCircle className="w-4 h-4 mr-1 flex-shrink-0" />
                   <span>Code promo WELCOME appliqué : -10%</span>
                 </div>
               )}
@@ -578,7 +580,7 @@ const ReservationPage = () => {
                   <CreditCard className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
                 <div className="space-y-2">
                   <Label htmlFor="expiry">Date d'expiration</Label>
                   <Input
@@ -681,7 +683,7 @@ const ReservationPage = () => {
                 </div>
               </div>
               
-              <div className="pt-2 space-y-2">
+              <div className={`${isMobile ? 'flex flex-col' : 'grid grid-cols-2'} gap-2 pt-2`}>
                 <Button variant="outline" className="w-full gap-2">
                   <CalendarIcon className="w-4 h-4" />
                   Ajouter au calendrier
@@ -718,40 +720,44 @@ const ReservationPage = () => {
         </Button>
 
         <Card className="mb-6">
-          <CardHeader className="p-6 pb-3">
-            <div className="flex justify-between items-center w-full">
-              <CardTitle className="flex items-center gap-2 text-lg">
+          <CardHeader className="p-4 sm:p-6 pb-3">
+            <div className="flex justify-between items-center w-full flex-wrap gap-2">
+              <CardTitle className={`flex items-center gap-2 text-lg ${isMobile ? 'flex-wrap' : ''}`}>
                 <span>Étape {currentStep}/5</span>
                 <span className="text-gray-400 mx-2">•</span>
                 <span>{getStepTitle()}</span>
               </CardTitle>
-              {currentStep < 5 && (
+              {currentStep < 5 && startDate && endDate && (
                 <Badge variant="outline" className="font-normal">
-                  {Math.ceil((endDate?.getTime() || 0 - (startDate?.getTime() || 0)) / (1000 * 60 * 60 * 24) || 0)} jours
+                  {Math.ceil((endDate?.getTime() - startDate?.getTime()) / (1000 * 60 * 60 * 24) || 0)} jours
                 </Badge>
               )}
             </div>
             <Progress value={getProgress()} className="h-1 mt-4" />
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
             {renderStepContent()}
           </CardContent>
         </Card>
 
-        <div className="flex justify-between">
+        <div className={`flex justify-between ${isMobile ? 'flex-col gap-3' : ''}`}>
           {currentStep < 5 ? (
             <>
               {currentStep > 1 && (
-                <Button variant="outline" onClick={() => setCurrentStep(prev => prev - 1)}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setCurrentStep(prev => prev - 1)}
+                  className={isMobile ? 'w-full' : ''}
+                >
                   Retour
                 </Button>
               )}
-              <div className={`${currentStep === 1 && currentStep > 1 ? '' : 'ml-auto'}`}>
+              <div className={`${currentStep === 1 ? 'w-full' : ''} ${!isMobile && currentStep > 1 ? 'ml-auto' : ''}`}>
                 <Button 
                   onClick={currentStep === 4 ? handleSubmit : () => setCurrentStep(prev => prev + 1)}
                   disabled={!canContinue()}
-                  className="bg-primary hover:bg-primary/90 gap-2"
-                  size="lg"
+                  className={`bg-primary hover:bg-primary/90 gap-2 ${isMobile ? 'w-full' : ''} ${isMobile && currentStep === 1 ? 'mt-0' : ''}`}
+                  size={isMobile ? "default" : "lg"}
                 >
                   {currentStep === 4 ? 'Payer et confirmer' : 'Continuer'}
                   {currentStep < 5 && <ChevronRight className="w-4 h-4" />}
@@ -759,7 +765,11 @@ const ReservationPage = () => {
               </div>
             </>
           ) : (
-            <Button onClick={() => navigate('/')} className="w-full bg-primary hover:bg-primary/90" size="lg">
+            <Button 
+              onClick={() => navigate('/')} 
+              className="w-full bg-primary hover:bg-primary/90" 
+              size={isMobile ? "default" : "lg"}
+            >
               Terminer
             </Button>
           )}
