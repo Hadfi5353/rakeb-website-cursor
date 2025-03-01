@@ -168,9 +168,9 @@ const ReservationDialog = ({ isOpen, onClose, car }: ReservationDialogProps) => 
       case 2:
         return selectedInsurance !== "";
       case 3:
-        return formData.fullName && formData.email && formData.phone;
+        return Boolean(formData.fullName) && Boolean(formData.email) && Boolean(formData.phone);
       case 4:
-        return formData.cardNumber && formData.expiry && formData.cvv;
+        return Boolean(formData.cardNumber) && Boolean(formData.expiry) && Boolean(formData.cvv);
       default:
         return true;
     }
