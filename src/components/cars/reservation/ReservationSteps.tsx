@@ -77,10 +77,10 @@ export const ReservationSteps = ({
 }: ReservationStepsProps) => {
   
   const toggleOption = (optionId: string) => {
-    setSelectedOptions(prev => 
-      prev.includes(optionId) 
-        ? prev.filter(id => id !== optionId)
-        : [...prev, optionId]
+    setSelectedOptions(
+      selectedOptions.includes(optionId) 
+        ? selectedOptions.filter(id => id !== optionId)
+        : [...selectedOptions, optionId]
     );
   };
 
