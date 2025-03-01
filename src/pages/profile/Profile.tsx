@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,7 +12,7 @@ import {
   CardContent,
 } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
-import { UserProfile, UserRole, DocumentType } from '@/types/user';
+import { UserProfile, UserRole, DocumentType, UserDocument } from '@/types/user';
 import { AvatarSection } from '@/components/profile/AvatarSection';
 import { PersonalInfo } from '@/components/profile/PersonalInfo';
 import { ContactInfo } from '@/components/profile/ContactInfo';

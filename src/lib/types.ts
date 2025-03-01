@@ -25,4 +25,8 @@ export type Vehicle = {
   views_count?: number;
   features?: string[];
   last_booking?: string;
+  
+  // Added properties to fix TypeScript errors
+  trips?: number;
+  seats?: number;
 };
