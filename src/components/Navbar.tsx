@@ -66,7 +66,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - Pass as an always-rendered component with visibility controlled by props */}
       <MobileMenu
         user={user}
         isOpen={isOpen}

@@ -13,20 +13,19 @@ interface MobileMenuProps {
 }
 
 export const MobileMenu = ({ user, isOpen, onClose, onSignOut, getInitials }: MobileMenuProps) => {
-  if (!isOpen) return null;
-
   const handleSignOut = () => {
     onSignOut();
     onClose();
   };
 
+  // Always render the menu, but control its visibility with CSS
   return (
-    <div className="fixed inset-0 z-[100] md:hidden">
+    <div className={`fixed inset-0 z-[100] md:hidden transition-all duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
       <div 
-        className="fixed inset-0 bg-black/20 backdrop-blur-sm"
+        className={`fixed inset-0 bg-black/20 backdrop-blur-sm transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0'}`}
         onClick={onClose}
       />
-      <div className="fixed inset-y-0 right-0 w-full max-w-xs bg-white shadow-xl">
+      <div className={`fixed inset-y-0 right-0 w-full max-w-xs bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex flex-col h-full overflow-y-auto">
           {user ? (
             <div className="px-6 py-6">
