@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, CreditCard, Info, Shield, Tag, Car, MapPin, Star, ArrowLeft, 
-  Clock, Users, CalendarIcon, ChevronRight, AlertCircle, Zap, PaymentIcon } from "lucide-react";
+  Clock, Users, CalendarIcon, ChevronRight, AlertCircle, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 const insuranceOptions = [
