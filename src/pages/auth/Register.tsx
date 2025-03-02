@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Mail, Lock, User, Car, Search, Shield, ChevronLeft, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserRole } from "@/types/user";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -22,6 +22,7 @@ const Register = () => {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,32 +56,33 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row overflow-hidden">
-      {/* Left side - Image with overlay */}
-      <div className="relative w-full md:w-1/2 bg-primary-dark min-h-[30vh] md:min-h-screen">
+      {/* Left side - Image with overlay - Reduced height on mobile */}
+      <div className={`relative ${isMobile ? 'h-[35vh]' : 'w-1/2 min-h-screen'} bg-primary-dark`}>
         <img 
-          src="/lovable-uploads/82c1e5bd-e916-4e57-9839-1a1a9e3204a5.png" 
+          src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&q=80" 
           alt="Peer to peer car rental" 
           className="w-full h-full object-cover opacity-30 absolute inset-0"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-primary-dark/80 to-primary/70"></div>
         
-        <div className="absolute top-0 left-0 p-6">
+        <div className="absolute top-0 left-0 p-4 md:p-6">
           <Link to="/" className="group inline-flex items-center text-white font-medium hover:text-white/90 transition-colors">
             <ChevronLeft className="w-5 h-5 mr-1 transition-transform group-hover:-translate-x-1" />
             Retour
           </Link>
         </div>
         
-        <div className="relative z-10 flex flex-col h-full justify-center px-8 py-12 text-white">
+        {/* Hide benefits on very small screens */}
+        <div className={`relative z-10 flex flex-col h-full justify-center px-4 md:px-8 py-6 md:py-12 text-white ${isMobile ? 'hidden sm:flex' : ''}`}>
           <div className="max-w-md mx-auto">
-            <h2 className="text-4xl font-bold mb-6">Rejoignez la communauté Rakeb</h2>
-            <p className="text-lg mb-8 text-white/80">La plateforme de location de voitures entre particuliers au Maroc</p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6">Rejoignez la communauté Rakeb</h2>
+            <p className="text-base md:text-lg mb-6 md:mb-8 text-white/80">La plateforme de location de voitures entre particuliers au Maroc</p>
             
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {benefits.map((benefit, index) => (
                 <div key={index} className="flex items-center space-x-3">
                   <CheckCircle2 className="h-5 w-5 text-primary-light flex-shrink-0" />
-                  <span className="text-white/90">{benefit}</span>
+                  <span className="text-sm md:text-base text-white/90">{benefit}</span>
                 </div>
               ))}
             </div>
@@ -89,16 +91,16 @@ const Register = () => {
       </div>
       
       {/* Right side - Registration form */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-8 bg-white">
-        <Card className="w-full max-w-md bg-white shadow-md border-0">
-          <CardHeader className="text-center pb-6">
+      <div className={`w-full ${isMobile ? '' : 'w-1/2'} flex items-center justify-center p-4 md:p-8 bg-white overflow-y-auto`}>
+        <Card className="w-full max-w-md bg-white shadow-md border-0 mt-4 md:mt-0">
+          <CardHeader className="text-center pb-4 md:pb-6">
             <div className="mx-auto w-fit mb-2">
-              <Car className="h-12 w-12 text-primary" />
+              <Car className="h-10 w-10 md:h-12 md:w-12 text-primary" />
             </div>
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+            <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
               Créez votre compte
             </CardTitle>
-            <CardDescription className="text-base mt-2">
+            <CardDescription className="text-sm md:text-base mt-2">
               Déjà inscrit ?{" "}
               <Link to="/auth/login" className="text-primary hover:text-primary-dark transition-colors font-medium">
                 Connectez-vous
@@ -107,8 +109,8 @@ const Register = () => {
           </CardHeader>
 
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
                 <div className="relative">
                   <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   <Input
@@ -174,12 +176,12 @@ const Register = () => {
               
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">Je suis un</label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3 md:gap-4">
                   <Button
                     type="button"
                     variant={formData.role === "renter" ? "default" : "outline"}
                     onClick={() => setFormData({ ...formData, role: "renter" })}
-                    className="w-full"
+                    className="w-full py-2 md:py-3 text-sm"
                   >
                     <Search className="w-4 h-4 mr-2" />
                     Locataire
@@ -188,7 +190,7 @@ const Register = () => {
                     type="button"
                     variant={formData.role === "owner" ? "default" : "outline"}
                     onClick={() => setFormData({ ...formData, role: "owner" })}
-                    className="w-full"
+                    className="w-full py-2 md:py-3 text-sm"
                   >
                     <Car className="w-4 h-4 mr-2" />
                     Propriétaire
@@ -205,7 +207,7 @@ const Register = () => {
                   onChange={(e) => setAgreeToTerms(e.target.checked)}
                   required
                 />
-                <label htmlFor="terms" className="text-sm text-gray-600">
+                <label htmlFor="terms" className="text-xs md:text-sm text-gray-600">
                   J'accepte les{" "}
                   <Link to="/legal" className="text-primary hover:text-primary-dark underline">
                     Conditions d'utilisation
@@ -220,20 +222,20 @@ const Register = () => {
               <Button 
                 type="submit" 
                 disabled={isLoading || !agreeToTerms} 
-                className="w-full py-6 text-base font-semibold"
+                className="w-full py-5 md:py-6 text-sm md:text-base font-semibold"
               >
                 {isLoading ? "Inscription en cours..." : "Créer mon compte"}
               </Button>
               
               <div className="relative flex items-center py-2">
                 <div className="flex-grow border-t border-gray-200"></div>
-                <span className="flex-shrink mx-3 text-gray-400 text-sm">ou continuer avec</span>
+                <span className="flex-shrink mx-3 text-gray-400 text-xs md:text-sm">ou continuer avec</span>
                 <div className="flex-grow border-t border-gray-200"></div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline" className="w-full" type="button">
-                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
+                <Button variant="outline" className="w-full py-2 text-xs md:text-sm" type="button">
+                  <svg className="w-4 h-4 md:w-5 md:h-5 mr-2" viewBox="0 0 24 24">
                     <path
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                       fill="#4285F4"
@@ -254,8 +256,8 @@ const Register = () => {
                   </svg>
                   Google
                 </Button>
-                <Button variant="outline" className="w-full" type="button">
-                  <svg className="w-5 h-5 mr-2 text-blue-600" viewBox="0 0 24 24">
+                <Button variant="outline" className="w-full py-2 text-xs md:text-sm" type="button">
+                  <svg className="w-4 h-4 md:w-5 md:h-5 mr-2 text-blue-600" viewBox="0 0 24 24">
                     <path
                       d="M9.03954 11.0141C9.03954 8.41642 10.8719 7.42261 12.7804 7.42261C13.7935 7.42261 14.6066 7.80087 15.1866 8.28543L17.0384 6.45043C15.8647 5.36739 14.3592 4.67651 12.7804 4.67651C9.74692 4.67651 6.97341 7.06208 6.97341 11.0141C6.97341 14.9661 9.74692 17.3516 12.7804 17.3516C14.4489 17.3516 15.8647 16.7501 16.9487 15.5776C18.1224 14.4051 18.5125 12.7489 18.5125 11.3834C18.5125 10.7818 18.4446 10.3036 18.3467 9.92532H12.7804V12.5625H16.0018C15.8647 13.5068 15.3644 14.2472 14.7146 14.7318C14.1844 15.1506 13.4154 15.5199 12.7804 15.5199C10.5514 15.5199 9.03954 13.7934 9.03954 11.0141Z"
                       fill="currentColor"
@@ -266,8 +268,8 @@ const Register = () => {
               </div>
 
               <div className="flex items-center justify-center space-x-2 text-xs text-gray-600 mt-4">
-                <Shield className="w-4 h-4" />
-                <span>Inscription sécurisée via SSL</span>
+                <Shield className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="text-xs">Inscription sécurisée via SSL</span>
               </div>
             </form>
           </CardContent>
