@@ -1,4 +1,6 @@
 
+import { useIsMobile } from "@/hooks/use-mobile";
+
 interface ReservationSummaryProps {
   startDate?: Date;
   endDate?: Date;
@@ -14,12 +16,14 @@ export const ReservationSummary = ({
   calculateTotal, 
   promoApplied 
 }: ReservationSummaryProps) => {
+  const isMobile = useIsMobile();
+  
   if (!startDate || !endDate) return null;
   
   const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   
   return (
-    <div className="p-4 border rounded-lg bg-gray-50 space-y-2">
+    <div className={`${isMobile ? 'p-3' : 'p-4'} border rounded-lg bg-gray-50 space-y-2`}>
       <div className="flex justify-between text-sm">
         <span>Durée de location :</span>
         <span className="font-medium">

@@ -164,7 +164,7 @@ const ReservationDialog = ({ isOpen, onClose, car }: ReservationDialogProps) => 
   const canContinue = () => {
     switch (currentStep) {
       case 1:
-        return !!startDate && !!endDate;
+        return Boolean(startDate) && Boolean(endDate);
       case 2:
         return selectedInsurance !== "";
       case 3:
@@ -178,7 +178,7 @@ const ReservationDialog = ({ isOpen, onClose, car }: ReservationDialogProps) => 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`${isMobile ? 'sm:max-w-[600px]' : 'sm:max-w-[700px]'} p-0`}>
+      <DialogContent className={`p-0 ${isMobile ? 'max-w-[95vw] h-[85vh]' : 'sm:max-w-[700px]'}`}>
         <div className="sticky top-0 z-10 bg-white rounded-t-lg border-b">
           <StepHeader 
             currentStep={currentStep} 
@@ -187,7 +187,7 @@ const ReservationDialog = ({ isOpen, onClose, car }: ReservationDialogProps) => 
           />
         </div>
 
-        <div className="px-6 py-4 max-h-[70vh] overflow-y-auto">
+        <div className={`px-4 py-3 ${isMobile ? 'overflow-y-auto h-[calc(100%-170px)]' : 'max-h-[70vh] overflow-y-auto px-6 py-4'}`}>
           <ReservationSteps 
             currentStep={currentStep}
             car={car}
@@ -212,7 +212,7 @@ const ReservationDialog = ({ isOpen, onClose, car }: ReservationDialogProps) => 
           />
         </div>
 
-        <DialogFooter className="p-6 pt-2 border-t flex-row justify-between">
+        <DialogFooter className={`${isMobile ? 'p-4 pt-2' : 'p-6 pt-2'} border-t flex-row justify-between sticky bottom-0 bg-white`}>
           <ReservationFooter 
             currentStep={currentStep}
             canContinue={canContinue()}

@@ -10,6 +10,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { RadioGroup } from "@/components/ui/radio-group";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 import { VehicleInfoCard } from "./VehicleInfoCard";
 import { ReservationSummary } from "./ReservationSummary";
@@ -75,6 +76,7 @@ export const ReservationSteps = ({
   calculateTotal,
   handleSubmit
 }: ReservationStepsProps) => {
+  const isMobile = useIsMobile();
   
   const toggleOption = (optionId: string) => {
     setSelectedOptions(
@@ -101,22 +103,22 @@ export const ReservationSteps = ({
   switch (currentStep) {
     case 1:
       return (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <VehicleInfoCard car={car} />
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <h3 className="font-medium flex items-center gap-2">
               <CalendarIcon className="w-4 h-4 text-primary" />
               Dates de location
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'sm:grid-cols-2 gap-4'}`}>
               <div>
                 <Label className="text-sm text-gray-600">Début</Label>
                 <Calendar
                   mode="single"
                   selected={startDate}
                   onSelect={setStartDate}
-                  className="rounded-md border"
+                  className={`rounded-md border ${isMobile ? 'w-full' : ''}`}
                   disabled={(date) => date < new Date()}
                 />
               </div>
@@ -126,7 +128,7 @@ export const ReservationSteps = ({
                   mode="single"
                   selected={endDate}
                   onSelect={setEndDate}
-                  className="rounded-md border"
+                  className={`rounded-md border ${isMobile ? 'w-full' : ''}`}
                   disabled={(date) => !startDate || date < startDate}
                 />
               </div>
@@ -147,8 +149,8 @@ export const ReservationSteps = ({
 
     case 2:
       return (
-        <div className="space-y-6">
-          <div className="space-y-4">
+        <div className="space-y-4">
+          <div className="space-y-3">
             <h3 className="font-medium flex items-center gap-2">
               <Shield className="w-4 h-4 text-primary" />
               Options d'assurance
@@ -156,7 +158,7 @@ export const ReservationSteps = ({
             <RadioGroup
               value={selectedInsurance}
               onValueChange={setSelectedInsurance}
-              className="space-y-4"
+              className="space-y-3"
             >
               {insuranceOptions.map((option) => (
                 <InsuranceOption 
@@ -168,12 +170,12 @@ export const ReservationSteps = ({
             </RadioGroup>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <h3 className="font-medium flex items-center gap-2">
               <CalendarIcon className="w-4 h-4 text-primary" />
               Options supplémentaires
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {additionalOptions.map((option) => (
                 <AdditionalOption 
                   key={option.id}
@@ -197,15 +199,15 @@ export const ReservationSteps = ({
 
     case 3:
       return (
-        <div className="space-y-6">
-          <div className="space-y-4">
+        <div className="space-y-4">
+          <div className="space-y-3">
             <h3 className="font-medium text-lg flex items-center gap-2">
               <Info className="w-4 h-4 text-primary" />
               Informations personnelles
             </h3>
-            <div className="grid gap-4">
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
+            <div className="grid gap-3">
+              <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'sm:grid-cols-2 gap-4'}`}>
+                <div className="space-y-1">
                   <Label htmlFor="fullName">Nom complet</Label>
                   <Input
                     id="fullName"
@@ -216,7 +218,7 @@ export const ReservationSteps = ({
                     required
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <Label htmlFor="phone">Téléphone</Label>
                   <Input
                     id="phone"
@@ -229,7 +231,7 @@ export const ReservationSteps = ({
                   />
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
@@ -244,12 +246,12 @@ export const ReservationSteps = ({
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Tag className="w-4 h-4 text-primary" />
               <Label>Code promo</Label>
             </div>
-            <div className="flex gap-2">
+            <div className={`flex gap-2 ${isMobile ? 'flex-col' : ''}`}>
               <Input
                 placeholder="Ex: WELCOME"
                 value={promoCode}
@@ -259,7 +261,7 @@ export const ReservationSteps = ({
               <Button 
                 variant="outline"
                 onClick={applyPromoCode}
-                className="whitespace-nowrap"
+                className={`whitespace-nowrap ${isMobile ? 'w-full' : ''}`}
                 disabled={promoApplied || !promoCode}
               >
                 Appliquer
@@ -288,8 +290,8 @@ export const ReservationSteps = ({
 
     case 4:
       return (
-        <div className="space-y-6">
-          <div className="space-y-4">
+        <div className="space-y-4">
+          <div className="space-y-3">
             <h3 className="font-medium flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-primary" />
               Méthode de paiement
@@ -297,7 +299,7 @@ export const ReservationSteps = ({
             <RadioGroup
               value={selectedPayment}
               onValueChange={setSelectedPayment}
-              className="space-y-3"
+              className="space-y-2"
             >
               {paymentMethods.map((method) => (
                 <PaymentMethod 
@@ -309,8 +311,8 @@ export const ReservationSteps = ({
             </RadioGroup>
           </div>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
+          <div className="space-y-3">
+            <div className="space-y-1">
               <Label htmlFor="cardNumber">Numéro de carte</Label>
               <div className="relative">
                 <Input
@@ -324,8 +326,8 @@ export const ReservationSteps = ({
                 <CreditCard className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
+            <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-2 gap-4'}`}>
+              <div className="space-y-1">
                 <Label htmlFor="expiry">Date d'expiration</Label>
                 <Input
                   id="expiry"
@@ -336,7 +338,7 @@ export const ReservationSteps = ({
                   required
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label htmlFor="cvv">CVV</Label>
                 <Input
                   id="cvv"
@@ -352,14 +354,14 @@ export const ReservationSteps = ({
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center space-x-2">
               <input type="checkbox" id="terms" className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" />
               <label htmlFor="terms" className="text-sm text-gray-600">
                 J'accepte les <a href="#" className="text-primary hover:underline">conditions générales</a> et la <a href="#" className="text-primary hover:underline">politique de confidentialité</a>
               </label>
             </div>
-            <div className="p-4 rounded-lg bg-amber-50 border border-amber-100 flex items-start gap-2">
+            <div className="p-3 rounded-lg bg-amber-50 border border-amber-100 flex items-start gap-2">
               <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-amber-800">
                 <p className="font-medium">Politique d'annulation</p>
@@ -368,7 +370,7 @@ export const ReservationSteps = ({
             </div>
           </div>
           
-          <div className="p-4 rounded-lg bg-primary/5 space-y-2">
+          <div className="p-3 rounded-lg bg-primary/5 space-y-2">
             <div className="flex items-center justify-between text-base font-bold text-primary">
               <span>Montant total à payer</span>
               <span>{calculateTotal()} Dh</span>
@@ -382,7 +384,7 @@ export const ReservationSteps = ({
 
     case 5:
       return (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <ConfirmationSummary email={formData.email} />
           <ConfirmationCard 
             car={car}

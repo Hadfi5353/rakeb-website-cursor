@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ReservationFooterProps {
   currentStep: number;
@@ -19,32 +19,36 @@ export const ReservationFooter = ({
   handleSubmit,
   onClose
 }: ReservationFooterProps) => {
+  const isMobile = useIsMobile();
+  
+  if (currentStep === 5) {
+    return (
+      <Button className="w-full" onClick={onClose}>
+        Terminer
+      </Button>
+    );
+  }
+
   return (
-    <div className="p-6 pt-2 border-t flex-row justify-between">
-      {currentStep < 5 ? (
-        <>
-          {currentStep > 1 && (
-            <Button variant="outline" onClick={handleBack}>
-              Retour
-            </Button>
-          )}
-          <div className={`${currentStep === 1 ? 'w-full' : ''}`}>
-            <Button 
-              onClick={currentStep === 4 ? handleSubmit : handleNext}
-              disabled={!canContinue}
-              className="bg-primary hover:bg-primary/90 gap-2"
-              size="lg"
-            >
-              {currentStep === 4 ? 'Payer et confirmer' : 'Continuer'}
-              {currentStep < 5 && <ChevronRight className="w-4 h-4" />}
-            </Button>
-          </div>
-        </>
-      ) : (
-        <Button onClick={onClose} className="w-full bg-primary hover:bg-primary/90" size="lg">
-          Terminer
+    <div className={`flex ${isMobile ? 'flex-col w-full gap-2' : 'w-full justify-between'}`}>
+      {currentStep > 1 && (
+        <Button 
+          variant="outline" 
+          onClick={handleBack}
+          className={isMobile ? "w-full" : ""}
+        >
+          Retour
         </Button>
       )}
+      <div className={`${isMobile ? 'w-full' : currentStep === 1 ? 'w-full' : ''}`}>
+        <Button
+          onClick={currentStep === 4 ? handleSubmit : handleNext}
+          disabled={!canContinue}
+          className={`${isMobile ? 'w-full' : currentStep === 1 ? 'w-full' : ''}`}
+        >
+          {currentStep === 4 ? "Confirmer la réservation" : "Continuer"}
+        </Button>
+      </div>
     </div>
   );
 };
