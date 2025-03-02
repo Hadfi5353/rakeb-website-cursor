@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Mail, Lock, User, Car, Search } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserRole } from "@/types/user";
+import { SocialLoginButtons } from "./SocialLoginButtons";
 
 export const RegisterForm = () => {
   const [formData, setFormData] = useState({
