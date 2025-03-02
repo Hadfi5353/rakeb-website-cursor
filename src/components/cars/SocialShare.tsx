@@ -1,4 +1,5 @@
 
+import React, { memo } from "react";
 import { Share2, Facebook, Twitter, MessageCircle, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +19,7 @@ interface SocialShareProps {
   className?: string;
 }
 
-const SocialShare = ({ car, className = "" }: SocialShareProps) => {
+const SocialShare = memo(({ car, className = "" }: SocialShareProps) => {
   const shareUrl = window.location.href;
   const shareText = `Découvrez ${car.name} à ${car.price}Dh/jour à ${car.location} sur Rakeb`;
 
@@ -52,7 +53,7 @@ const SocialShare = ({ car, className = "" }: SocialShareProps) => {
           Partager
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48 bg-white">
+      <DropdownMenuContent align="end" className="w-48 bg-white z-[999]">
         <DropdownMenuItem onClick={() => handleShare("facebook")} className="cursor-pointer">
           <Facebook className="w-4 h-4 mr-2" />
           Facebook
@@ -72,6 +73,6 @@ const SocialShare = ({ car, className = "" }: SocialShareProps) => {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-};
+});
 
 export default SocialShare;

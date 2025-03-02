@@ -1,4 +1,5 @@
 
+import React, { memo } from "react";
 import { Menu, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -13,7 +14,7 @@ interface DesktopMenuProps {
   getInitials: (user: any) => string;
 }
 
-export const DesktopMenu = ({ user, onSignOut, getInitials }: DesktopMenuProps) => {
+export const DesktopMenu = memo(({ user, onSignOut, getInitials }: DesktopMenuProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -33,7 +34,7 @@ export const DesktopMenu = ({ user, onSignOut, getInitials }: DesktopMenuProps) 
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64">
+      <DropdownMenuContent align="end" className="w-64 bg-white z-[999]">
         {user ? (
           <UserMenuContent user={user} onSignOut={onSignOut} getInitials={getInitials} />
         ) : (
@@ -43,4 +44,6 @@ export const DesktopMenu = ({ user, onSignOut, getInitials }: DesktopMenuProps) 
       </DropdownMenuContent>
     </DropdownMenu>
   );
-};
+});
+
+DesktopMenu.displayName = "DesktopMenu";
