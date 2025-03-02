@@ -7,7 +7,7 @@ import SocialShare from "./SocialShare";
 
 interface CarCardProps {
   car: {
-    id: number;
+    id: number | string;
     name: string;
     image: string;
     price: string;
@@ -29,6 +29,7 @@ const CarCard = ({ car }: CarCardProps) => {
 
   const handleCardClick = () => {
     // Navigate to the car detail page
+    console.log("Navigating to car detail page for ID:", car.id);
     navigate(`/cars/${car.id}`);
   };
 

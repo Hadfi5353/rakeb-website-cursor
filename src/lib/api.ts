@@ -21,39 +21,59 @@ export const vehiclesApi = {
       
       let query;
       if (isNumericId) {
-        // For demo purposes, just return the first vehicle or mock data
-        console.log("Using numeric ID, fetching first vehicle as demo");
-        query = supabase
-          .from('vehicles')
-          .select('*')
-          .limit(1);
+        // For demo purposes, return a mock vehicle with the numeric ID
+        console.log("Using numeric ID, creating mock data");
+        // Return directly without querying the database for numeric IDs
+        return {
+          id: id,
+          name: `Demo Vehicle ${id}`,
+          brand: "Toyota",
+          model: "Corolla",
+          year: 2023,
+          price: 300,
+          location: "Casablanca, Maroc",
+          description: "Voiture de démonstration disponible pour test.",
+          transmission: "automatic",
+          fuel: "essence",
+          image_url: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=800",
+          owner_id: "demo-owner",
+          created_at: new Date().toISOString(),
+          longitude: -7.5898,
+          latitude: 33.5731,
+          category: "Berline",
+          rating: 4.7,
+          reviews_count: 12,
+          isPremium: false,
+          trips: 24,
+          seats: 5
+        } as Vehicle;
       } else {
         // Real UUID case
         query = supabase
           .from('vehicles')
           .select('*')
           .eq('id', id);
-      }
-      
-      const { data, error } = await query;
-      
-      if (error) throw error;
-      
-      // If we found a vehicle, return it
-      if (data && data.length > 0) {
-        return data[0] as Vehicle;
+          
+        const { data, error } = await query;
+        
+        if (error) throw error;
+        
+        // If we found a vehicle, return it
+        if (data && data.length > 0) {
+          return data[0] as Vehicle;
+        }
       }
       
       // If no vehicle found, create a mock one for demo purposes
       return {
         id: id,
-        name: "Demo Vehicle",
-        brand: "Toyota",
-        model: "Corolla",
+        name: "Vehicle Not Found",
+        brand: "Unknown",
+        model: "Unknown",
         year: 2023,
         price: 300,
         location: "Casablanca, Maroc",
-        description: "Voiture de démonstration disponible pour test.",
+        description: "Ce véhicule n'existe pas dans notre base de données.",
         transmission: "automatic",
         fuel: "essence",
         image_url: "/placeholder.svg",
