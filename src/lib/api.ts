@@ -1,4 +1,3 @@
-
 import { supabase } from './supabase';
 import { Vehicle } from './types';
 
@@ -14,14 +13,19 @@ export const vehiclesApi = {
   },
 
   async getVehicle(id: string) {
-    const { data, error } = await supabase
-      .from('vehicles')
-      .select('*')
-      .eq('id', id)
-      .single();
-      
-    if (error) throw error;
-    return data as Vehicle;
+    try {
+      const { data, error } = await supabase
+        .from('vehicles')
+        .select('*')
+        .eq('id', id)
+        .single();
+        
+      if (error) throw error;
+      return data as Vehicle;
+    } catch (error) {
+      console.error("Erreur lors de la récupération du véhicule:", error);
+      throw error;
+    }
   },
 
   async createVehicle(vehicle: Omit<Vehicle, 'id' | 'created_at' | 'owner_id'>) {

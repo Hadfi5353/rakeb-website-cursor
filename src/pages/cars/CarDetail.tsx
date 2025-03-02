@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -16,7 +15,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-// New component imports
 import QuickStats from "@/components/cars/details/QuickStats";
 import VehicleDescription from "@/components/cars/details/VehicleDescription";
 import MobileOwnerCard from "@/components/cars/details/MobileOwnerCard";
@@ -36,6 +34,7 @@ const CarDetail = () => {
   const { data: vehicle, isLoading, error } = useQuery({
     queryKey: ['vehicle', id],
     queryFn: () => vehiclesApi.getVehicle(id || ''),
+    enabled: !!id,
   });
 
   const toggleFavorite = () => {
@@ -75,17 +74,14 @@ const CarDetail = () => {
     );
   }
 
-  const demoImages = [
-    "/placeholder.svg",
-    "/placeholder.svg",
-    "/placeholder.svg",
-  ];
+  const vehicleImages = vehicle?.image_url 
+    ? [vehicle.image_url, vehicle.image_url, vehicle.image_url] 
+    : ["/placeholder.svg", "/placeholder.svg", "/placeholder.svg"];
 
-  // Mobile layout shows the reservation card at the bottom
   if (isMobile) {
     return (
       <div className="min-h-screen bg-gray-50 pt-16">
-        <VehicleGallery images={demoImages} />
+        <VehicleGallery images={vehicleImages} />
         
         <div className="px-4 py-6 pb-24">
           <VehicleHeader 
@@ -95,23 +91,18 @@ const CarDetail = () => {
           />
           
           <div className="space-y-6 mt-6">
-            {/* Quick stats */}
             <QuickStats vehicle={vehicle} />
             
-            {/* Description */}
             <VehicleDescription vehicle={vehicle} />
             
-            {/* Features */}
             <Card>
               <CardContent className="p-4">
                 <VehicleFeatures />
               </CardContent>
             </Card>
             
-            {/* Owner */}
             <MobileOwnerCard />
             
-            {/* Map */}
             <Card>
               <CardContent className="p-4">
                 <h2 className="text-lg font-semibold mb-4">Localisation</h2>
@@ -121,12 +112,10 @@ const CarDetail = () => {
               </CardContent>
             </Card>
             
-            {/* Reviews */}
             <MobileReviews />
           </div>
         </div>
         
-        {/* Fixed bottom reservation bar */}
         <MobileBottomBar 
           vehicle={vehicle} 
           onReserve={() => setIsReservationOpen(true)} 
@@ -135,7 +124,6 @@ const CarDetail = () => {
     );
   }
 
-  // Desktop layout
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -146,7 +134,7 @@ const CarDetail = () => {
         />
 
         <div className="mb-8">
-          <VehicleGallery images={demoImages} />
+          <VehicleGallery images={vehicleImages} />
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">

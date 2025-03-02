@@ -3,10 +3,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Vehicle } from "@/lib/types";
 
 interface VehicleDescriptionProps {
-  vehicle: Vehicle;
+  vehicle?: Vehicle;
 }
 
 const VehicleDescription = ({ vehicle }: VehicleDescriptionProps) => {
+  if (!vehicle) return null;
+  
   return (
     <Card>
       <CardContent className="p-4">

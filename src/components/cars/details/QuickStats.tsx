@@ -4,10 +4,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Vehicle } from "@/lib/types";
 
 interface QuickStatsProps {
-  vehicle: Vehicle;
+  vehicle?: Vehicle;
 }
 
 const QuickStats = ({ vehicle }: QuickStatsProps) => {
+  if (!vehicle) return null;
+  
   return (
     <div className="grid grid-cols-2 gap-3">
       <Card className="bg-primary/5">
