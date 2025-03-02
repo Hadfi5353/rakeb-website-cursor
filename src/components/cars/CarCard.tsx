@@ -28,6 +28,7 @@ const CarCard = ({ car }: CarCardProps) => {
   };
 
   const handleCardClick = () => {
+    // Navigate to the car detail page
     navigate(`/cars/${car.id}`);
   };
 

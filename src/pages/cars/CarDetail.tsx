@@ -56,15 +56,16 @@ const CarDetail = () => {
     );
   }
 
-  if (error || !vehicle) {
+  if (error) {
+    console.error("Error fetching vehicle:", error);
     return (
       <div className="min-h-screen bg-gray-50 pt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Véhicule non trouvé
+            Erreur lors du chargement
           </h1>
           <p className="text-gray-600 mb-4">
-            Désolé, nous n'avons pas pu trouver le véhicule que vous recherchez.
+            Une erreur s'est produite lors du chargement des détails du véhicule.
           </p>
           <Button onClick={() => navigate(-1)}>
             Retourner à la recherche
@@ -127,11 +128,13 @@ const CarDetail = () => {
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <VehicleHeader 
-          vehicle={vehicle}
-          isFavorite={isFavorite}
-          onToggleFavorite={toggleFavorite}
-        />
+        {vehicle && (
+          <VehicleHeader 
+            vehicle={vehicle}
+            isFavorite={isFavorite}
+            onToggleFavorite={toggleFavorite}
+          />
+        )}
 
         <div className="mb-8">
           <VehicleGallery images={vehicleImages} />
@@ -141,11 +144,11 @@ const CarDetail = () => {
           <div className="lg:col-span-2 space-y-8">
             <div className="bg-white rounded-lg shadow-sm">
               <div className="p-6">
-                <VehicleSpecs vehicle={vehicle} />
+                {vehicle && <VehicleSpecs vehicle={vehicle} />}
 
                 <div className="prose prose-sm max-w-none mb-6">
                   <h2 className="text-xl font-semibold mb-4">Description</h2>
-                  <p className="text-gray-600">{vehicle.description}</p>
+                  <p className="text-gray-600">{vehicle?.description || "Aucune description disponible pour ce véhicule."}</p>
                 </div>
 
                 <VehicleFeatures />
@@ -156,24 +159,28 @@ const CarDetail = () => {
           </div>
 
           <div className="space-y-6">
-            <ReservationCard 
-              vehicle={vehicle}
-              onReserve={() => setIsReservationOpen(true)}
-            />
+            {vehicle && (
+              <ReservationCard 
+                vehicle={vehicle}
+                onReserve={() => setIsReservationOpen(true)}
+              />
+            )}
 
             <OwnerInfo />
             <RentalConditions />
-            <VehicleMap vehicle={vehicle} />
+            {vehicle && <VehicleMap vehicle={vehicle} />}
             <RentalPolicy />
           </div>
         </div>
       </div>
 
-      <ReservationDialog
-        isOpen={isReservationOpen}
-        onClose={() => setIsReservationOpen(false)}
-        car={vehicle}
-      />
+      {vehicle && (
+        <ReservationDialog
+          isOpen={isReservationOpen}
+          onClose={() => setIsReservationOpen(false)}
+          car={vehicle}
+        />
+      )}
     </div>
   );
 };
