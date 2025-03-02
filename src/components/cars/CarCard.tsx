@@ -22,12 +22,20 @@ interface CarCardProps {
 const CarCard = ({ car }: CarCardProps) => {
   const navigate = useNavigate();
 
-  const handleReservation = () => {
+  const handleReservation = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Empêche le clic de buller jusqu'à la carte
     navigate(`/cars/${car.id}/reserve`, { state: { car } });
   };
 
+  const handleCardClick = () => {
+    navigate(`/cars/${car.id}`);
+  };
+
   return (
-    <Card className="overflow-hidden hover:shadow-medium transition-all duration-300">
+    <Card 
+      className="overflow-hidden hover:shadow-medium transition-all duration-300 cursor-pointer"
+      onClick={handleCardClick}
+    >
       <CardHeader className="p-0">
         <div className="relative">
           <img
@@ -35,7 +43,7 @@ const CarCard = ({ car }: CarCardProps) => {
             alt={car.name}
             className="w-full h-48 object-cover"
           />
-          <div className="absolute top-4 right-4">
+          <div className="absolute top-4 right-4" onClick={(e) => e.stopPropagation()}>
             <SocialShare car={car} className="bg-white/90 backdrop-blur-sm hover:bg-white" />
           </div>
         </div>
