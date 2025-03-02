@@ -3,33 +3,39 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
 import {
   Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
   CardContent,
 } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
-import { UserProfile, UserRole, DocumentType, UserDocument } from '@/types/user';
+import { UserProfile, UserRole } from '@/types/user';
+import { useProfile } from '@/hooks/use-profile';
 import { AvatarSection } from '@/components/profile/AvatarSection';
 import { PersonalInfo } from '@/components/profile/PersonalInfo';
 import { ContactInfo } from '@/components/profile/ContactInfo';
 import { RoleSelection } from '@/components/profile/RoleSelection';
-import { VerificationStatus } from '@/components/profile/sections/VerificationStatus';
 import { ProfileCompletion } from '@/components/profile/sections/ProfileCompletion';
 import { DocumentsSection } from '@/components/profile/sections/DocumentsSection';
 import { UserStats } from '@/components/profile/sections/UserStats';
 import { NotificationPreferences } from '@/components/profile/sections/NotificationPreferences';
+import { ProfileHeader } from '@/components/profile/sections/ProfileHeader';
+import { SaveProfileButton } from '@/components/profile/sections/SaveProfileButton';
+import { ProfileLoader } from '@/components/profile/sections/ProfileLoader';
 
 const Profile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [documents, setDocuments] = useState<UserDocument[]>([]);
+  const { 
+    getProfile, 
+    checkDocuments, 
+    handleDocumentUpload, 
+    documents, 
+    loading, 
+    uploading, 
+    setUploading 
+  } = useProfile();
+  
   const [profile, setProfile] = useState<Partial<UserProfile>>({
     first_name: '',
     last_name: '',
@@ -58,110 +64,17 @@ const Profile = () => {
       navigate('/auth/login');
       return;
     }
-    getProfile();
-    checkDocuments();
-  }, [user, navigate]);
-
-  const getProfile = async () => {
-    try {
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*, addresses(*)')
-        .eq('id', user.id)
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        setProfile({
-          ...data,
-          email: user.email,
-          address: data.addresses?.[0],
-        });
+    
+    const fetchData = async () => {
+      const profileData = await getProfile();
+      if (profileData) {
+        setProfile(profileData);
       }
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de charger votre profil",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const checkDocuments = async () => {
-    try {
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('user_documents')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      if (data) {
-        setDocuments(data);
-      }
-    } catch (error) {
-      console.error('Error fetching documents:', error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de charger vos documents",
-      });
-    }
-  };
-
-  const handleDocumentUpload = async (type: DocumentType, file: File) => {
-    try {
-      setUploading(true);
-      if (!user) return;
-
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${user.id}/${type}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('user_documents')
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('user_documents')
-        .getPublicUrl(filePath);
-
-      const { error: insertError } = await supabase
-        .from('user_documents')
-        .insert({
-          user_id: user.id,
-          document_type: type,
-          file_url: publicUrl,
-        });
-
-      if (insertError) throw insertError;
-
-      toast({
-        title: "Document téléversé",
-        description: "Votre document a été envoyé pour vérification",
-      });
-
       checkDocuments();
-    } catch (error) {
-      console.error('Error uploading document:', error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de téléverser le document",
-      });
-    } finally {
-      setUploading(false);
-    }
-  };
+    };
+    
+    fetchData();
+  }, [user, navigate, getProfile, checkDocuments]);
 
   const updateProfile = async () => {
     try {
@@ -259,11 +172,7 @@ const Profile = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <ProfileLoader />;
   }
 
   const getMissingItems = () => {
@@ -278,18 +187,7 @@ const Profile = () => {
   return (
     <div className="container max-w-4xl mx-auto py-8 px-4">
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Mon Profil</CardTitle>
-              <CardDescription>Gérez vos informations personnelles</CardDescription>
-            </div>
-            <VerificationStatus
-              status={profile.verification_status || 'pending'}
-              role={profile.role || 'renter'}
-            />
-          </div>
-        </CardHeader>
+        <ProfileHeader profile={profile} />
         <CardContent className="space-y-8">
           <ProfileCompletion
             completion={profile.profile_completion || 0}
@@ -330,9 +228,7 @@ const Profile = () => {
             onChange={(prefs) => handleProfileChange({ notification_preferences: prefs })}
           />
           
-          <Button onClick={updateProfile} className="w-full">
-            Sauvegarder les modifications
-          </Button>
+          <SaveProfileButton onSave={updateProfile} />
         </CardContent>
       </Card>
     </div>
