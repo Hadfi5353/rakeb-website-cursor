@@ -12,7 +12,7 @@ import VehicleFeatures from "@/components/cars/details/VehicleFeatures";
 import VehicleMap from "@/components/cars/details/VehicleMap";
 import ReservationCard from "@/components/cars/details/ReservationCard";
 import CustomerReviews from "@/components/cars/details/CustomerReviews";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
