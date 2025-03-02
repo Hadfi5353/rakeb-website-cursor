@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ArrowLeft, Check } from "lucide-react";
 
 interface ReservationFooterProps {
   currentStep: number;
@@ -24,6 +25,7 @@ export const ReservationFooter = ({
   if (currentStep === 5) {
     return (
       <Button className="w-full" onClick={onClose}>
+        <Check className="w-4 h-4 mr-2" />
         Terminer
       </Button>
     );
@@ -36,7 +38,9 @@ export const ReservationFooter = ({
           variant="outline" 
           onClick={handleBack}
           className={isMobile ? "w-full" : ""}
+          size={isMobile ? "sm" : "default"}
         >
+          <ArrowLeft className="w-4 h-4 mr-2" />
           Retour
         </Button>
       )}
@@ -45,6 +49,7 @@ export const ReservationFooter = ({
           onClick={currentStep === 4 ? handleSubmit : handleNext}
           disabled={!canContinue}
           className={`${isMobile ? 'w-full' : currentStep === 1 ? 'w-full' : ''}`}
+          size={isMobile ? "sm" : "default"}
         >
           {currentStep === 4 ? "Confirmer la réservation" : "Continuer"}
         </Button>

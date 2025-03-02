@@ -1,8 +1,9 @@
+
 import { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/components/ui/use-toast'
-import { UserRole } from '@/types/user'
+import { UserRole, DocumentType, UserDocument } from '@/types/user'
 
 interface AuthContextType {
   user: User | null
@@ -11,6 +12,9 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
   getUserRole: () => Promise<UserRole | null>
+  updateUserRole: (role: UserRole) => Promise<void>
+  hasRequiredDocuments: (role: UserRole) => Promise<boolean>
+  getUserDocuments: () => Promise<UserDocument[]>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -53,6 +57,71 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.error("Erreur lors de la récupération du rôle:", error)
       return null
+    }
+  }
+
+  const updateUserRole = async (role: UserRole): Promise<void> => {
+    try {
+      if (!user) throw new Error("Utilisateur non connecté")
+
+      // Update the role in the profile table
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role })
+        .eq('id', user.id)
+
+      if (error) throw error
+
+      toast({
+        title: "Rôle mis à jour",
+        description: `Vous êtes maintenant un ${role === 'owner' ? 'propriétaire' : 'locataire'}.`,
+      })
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du rôle:", error)
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de mettre à jour votre rôle.",
+      })
+      throw error
+    }
+  }
+
+  const getUserDocuments = async (): Promise<UserDocument[]> => {
+    try {
+      if (!user) return []
+
+      const { data, error } = await supabase
+        .from('user_documents')
+        .select('*')
+        .eq('user_id', user.id)
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error("Erreur lors de la récupération des documents:", error)
+      return []
+    }
+  }
+
+  const hasRequiredDocuments = async (role: UserRole): Promise<boolean> => {
+    try {
+      if (!user) return false
+
+      const documents = await getUserDocuments()
+      
+      // Define required documents for each role
+      const requiredDocuments: DocumentType[] = role === 'renter' 
+        ? ['driver_license', 'identity_card'] 
+        : ['identity_card', 'bank_details', 'vehicle_registration', 'insurance']
+
+      // Check if all required documents are verified
+      return requiredDocuments.every(docType => 
+        documents.some(doc => doc.document_type === docType && doc.status === 'verified')
+      )
+    } catch (error) {
+      console.error("Erreur lors de la vérification des documents:", error)
+      return false
     }
   }
 
@@ -185,6 +254,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signIn,
     signOut,
     getUserRole,
+    updateUserRole,
+    hasRequiredDocuments,
+    getUserDocuments,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

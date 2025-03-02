@@ -1,6 +1,7 @@
 
-import { CheckCircle, AlertCircle, XCircle } from 'lucide-react';
+import { CheckCircle, AlertCircle, XCircle, Shield } from 'lucide-react';
 import { VerificationStatus as Status } from '@/types/user';
+import { cn } from '@/lib/utils';
 
 interface VerificationStatusProps {
   status: Status;
@@ -30,8 +31,24 @@ export const VerificationStatus = ({ status, role }: VerificationStatusProps) =>
     }
   };
 
+  const getBgColor = () => {
+    switch (status) {
+      case 'verified':
+        return 'bg-green-50 border-green-200';
+      case 'pending':
+        return 'bg-yellow-50 border-yellow-200';
+      case 'rejected':
+        return 'bg-red-50 border-red-200';
+      default:
+        return 'bg-background border';
+    }
+  };
+
   return (
-    <div className="flex items-center gap-2 p-2 rounded-full bg-background border">
+    <div className={cn(
+      "flex items-center gap-2 px-3 py-1.5 rounded-full",
+      getBgColor()
+    )}>
       {getStatusIcon()}
       <span className="text-sm font-medium">{getStatusText()}</span>
     </div>
