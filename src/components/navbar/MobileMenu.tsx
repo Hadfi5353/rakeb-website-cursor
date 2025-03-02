@@ -1,5 +1,5 @@
 
-import React, { memo, useEffect } from "react";
+import React, { memo } from "react";
 import { Link } from "react-router-dom";
 import { Car, LogIn, UserPlus, LayoutDashboard, User, LogOut, HelpCircle, MessageCircle, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,39 +19,19 @@ export const MobileMenu = memo(({ user, isOpen, onClose, onSignOut, getInitials 
     onClose();
   };
 
-  // Handle ESC key to close the menu
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-    
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
-  }, [isOpen, onClose]);
-
   return (
-    <div 
-      className={`fixed inset-0 z-[100] md:hidden will-change-transform transform-gpu transition-all duration-300 ease-out ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-      aria-hidden={!isOpen}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Menu mobile"
-    >
+    <div className={`fixed inset-0 z-[100] md:hidden will-change-transform transform-gpu transition-all duration-300 ease-out ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
       <div 
         className={`fixed inset-0 bg-black/20 backdrop-blur-sm transition-opacity transform-gpu ${isOpen ? 'opacity-100' : 'opacity-0'}`}
         onClick={onClose}
       />
-      <div 
-        className={`fixed inset-y-0 right-0 w-full max-w-xs bg-white shadow-xl will-change-transform transform-gpu transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
-      >
+      <div className={`fixed inset-y-0 right-0 w-full max-w-xs bg-white shadow-xl will-change-transform transform-gpu transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex flex-col h-full overflow-y-auto">
           {user ? (
             <div className="px-6 py-6">
               <div className="flex items-center space-x-3 mb-6">
                 <Avatar>
-                  <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.first_name || 'Avatar'} />
+                  <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.first_name} />
                   <AvatarFallback>{getInitials(user)}</AvatarFallback>
                 </Avatar>
                 <div>

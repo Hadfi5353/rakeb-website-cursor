@@ -1,6 +1,6 @@
 
-import { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,24 +12,6 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // Close mobile menu when changing routes
-  useEffect(() => {
-    setIsOpen(false);
-  }, [location.pathname]);
-
-  // Prevent body scroll when mobile menu is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
 
   const handleSignOut = async () => {
     try {
@@ -44,10 +26,6 @@ const Navbar = () => {
     const firstName = user?.user_metadata?.first_name || '';
     const lastName = user?.user_metadata?.last_name || '';
     return (firstName[0] + lastName[0]).toUpperCase();
-  };
-
-  const toggleMenu = () => {
-    setIsOpen(prev => !prev);
   };
 
   return (
@@ -76,10 +54,8 @@ const Navbar = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={toggleMenu}
+              onClick={() => setIsOpen(!isOpen)}
               className="p-1"
-              aria-expanded={isOpen}
-              aria-label="Toggle menu"
             >
               {isOpen ? 
                 <X className="h-6 w-6 text-gray-600" /> : 
@@ -90,7 +66,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - Pass as an always-rendered component with visibility controlled by props */}
       <MobileMenu
         user={user}
         isOpen={isOpen}
