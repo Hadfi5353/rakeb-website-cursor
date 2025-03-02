@@ -34,7 +34,7 @@ export const DesktopMenu = memo(({ user, onSignOut, getInitials }: DesktopMenuPr
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64 bg-white z-[999]">
+      <DropdownMenuContent align="end" className="w-64 bg-white shadow-md z-[999]">
         {user ? (
           <UserMenuContent user={user} onSignOut={onSignOut} getInitials={getInitials} />
         ) : (

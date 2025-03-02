@@ -53,7 +53,7 @@ const SocialShare = memo(({ car, className = "" }: SocialShareProps) => {
           Partager
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48 bg-white z-[999]">
+      <DropdownMenuContent align="end" className="w-48 bg-white shadow-md z-[999]">
         <DropdownMenuItem onClick={() => handleShare("facebook")} className="cursor-pointer">
           <Facebook className="w-4 h-4 mr-2" />
           Facebook
