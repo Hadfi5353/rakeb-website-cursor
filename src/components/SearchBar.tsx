@@ -1,25 +1,40 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { CalendarDays, MapPin, Search } from "lucide-react";
+import { CalendarDays, MapPin, Search, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { cn } from "@/lib/utils";
 import { moroccanCities } from "@/lib/data/moroccan-cities";
 import { DateRange } from "react-day-picker";
 import { useIsMobile } from "@/hooks/use-mobile";
+
+const RECENT_SEARCHES_KEY = 'recent_searches';
+const MAX_RECENT_SEARCHES = 5;
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 const SearchBar = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [location, setLocation] = useState("");
+  const [showLocationSheet, setShowLocationSheet] = useState(false);
+  const [showDateDialog, setShowDateDialog] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredCities, setFilteredCities] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [pickupTime, setPickupTime] = useState("12");
+  const [returnTime, setReturnTime] = useState("12");
+  const [isSearching, setIsSearching] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    const saved = localStorage.getItem(RECENT_SEARCHES_KEY);
+    return saved ? JSON.parse(saved) : [];
+  });
+  const inputRef = useRef<HTMLInputElement>(null);
   const suggestionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,122 +57,286 @@ const SearchBar = () => {
       setFilteredCities(filtered);
       setShowSuggestions(true);
     } else {
-      setFilteredCities([]);
-      setShowSuggestions(false);
+      setFilteredCities(moroccanCities);
+      setShowSuggestions(true);
     }
+  };
+
+  const addToRecentSearches = (city: string) => {
+    const updated = [city, ...recentSearches.filter(s => s !== city)].slice(0, MAX_RECENT_SEARCHES);
+    setRecentSearches(updated);
+    localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
   };
 
   const handleCitySelect = (city: string) => {
     setLocation(city);
     setShowSuggestions(false);
+    setShowLocationSheet(false);
+    addToRecentSearches(city);
   };
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    const formattedDates = dateRange?.from && dateRange?.to
-      ? `${format(dateRange.from, 'yyyy-MM-dd')}:${format(dateRange.to, 'yyyy-MM-dd')}`
-      : '';
     
+    // Validate required fields
+    if (!location) {
+      // Focus the location input if empty
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+      return;
+    }
+    
+    if (!dateRange?.from || !dateRange?.to) {
+      // Open date dialog if dates not selected
+      setShowDateDialog(true);
+      return;
+    }
+    
+    setIsSearching(true);
+    
+    // Format dates for the API
+    const formattedStartDate = format(dateRange.from, 'yyyy-MM-dd');
+    const formattedEndDate = format(dateRange.to, 'yyyy-MM-dd');
+    const formattedDates = `${formattedStartDate}T${pickupTime}:00:${formattedEndDate}T${returnTime}:00`;
+    
+    addToRecentSearches(location);
+    
+    // Build search params
     const searchParams = new URLSearchParams({
       location: location,
       dates: formattedDates,
     });
+    
+    console.log("Recherche avec les paramètres:", {
+      location,
+      startDate: formattedStartDate,
+      endDate: formattedEndDate,
+      pickupTime,
+      returnTime
+    });
+    
+    // Navigate to search results page
     navigate(`/search?${searchParams.toString()}`);
+    
+    // Reset search state after navigation
+    setIsSearching(false);
+  };
+
+  const renderLocationInput = () => {
+    return (
+      <div className="flex-1 relative">
+        <div className="flex items-center gap-3 h-14 md:h-12 px-4 border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary">
+          <MapPin className="text-primary flex-shrink-0" size={20} />
+          <input
+            ref={inputRef}
+            type="text"
+            placeholder="Où souhaitez-vous louer ?"
+            className="flex-1 border-0 focus:ring-0 p-0 h-full bg-transparent outline-none text-base"
+            value={location}
+            onChange={(e) => handleLocationChange(e.target.value)}
+            onFocus={() => setShowSuggestions(true)}
+          />
+        </div>
+
+        {showSuggestions && (
+          <div
+            ref={suggestionRef}
+            className="absolute left-0 right-0 top-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 max-h-[300px] overflow-auto z-50"
+          >
+            {recentSearches.length > 0 && !location && (
+              <div className="p-2">
+                <div className="flex items-center gap-2 px-2 py-1 text-sm text-gray-500">
+                  <Clock size={14} />
+                  Recherches récentes
+                </div>
+                {recentSearches.map((city) => (
+                  <button
+                    key={`recent-${city}`}
+                    type="button"
+                    className="w-full px-4 py-2 text-left hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => handleCitySelect(city)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Clock className="text-gray-400" size={14} />
+                      {city}
+                    </div>
+                  </button>
+                ))}
+                <div className="border-t border-gray-100 mt-2"></div>
+              </div>
+            )}
+
+            {filteredCities.map((city) => (
+              <button
+                key={city}
+                type="button"
+                className="w-full px-4 py-2 text-left hover:bg-gray-50 rounded-lg transition-colors"
+                onClick={() => handleCitySelect(city)}
+              >
+                <div className="flex items-center gap-2">
+                  <MapPin className="text-gray-400" size={14} />
+                  {city}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
-    <form onSubmit={handleSearch} className="bg-white rounded-xl shadow-lg overflow-visible">
-      <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-100">
-        <div className="flex-1 p-4 relative">
-          <Label htmlFor="location" className="sr-only">Lieu</Label>
-          <div className="flex items-center gap-3">
-            <MapPin className="text-primary" size={20} />
-            <Input
-              id="location"
-              type="text"
-              placeholder="Où souhaitez-vous louer ?"
-              className="w-full border-none shadow-none focus-visible:ring-0"
-              value={location}
-              onChange={(e) => handleLocationChange(e.target.value)}
-              autoComplete="off"
-            />
-          </div>
-          {showSuggestions && filteredCities.length > 0 && (
-            <div 
-              ref={suggestionRef}
-              className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-[50vh] md:max-h-60 overflow-auto z-50"
+    <>
+      <form onSubmit={handleSearch} className="w-full max-w-4xl mx-auto">
+        <div className="flex flex-col md:flex-row gap-4 p-4">
+          {renderLocationInput()}
+          
+          <div className="flex-1">
+            <Button
+              variant="outline"
+              className="w-full flex items-center gap-3 h-14 md:h-12 px-4 border border-gray-200 rounded-xl"
+              onClick={() => setShowDateDialog(true)}
             >
-              {filteredCities.map((city) => (
-                <button
-                  key={city}
-                  type="button"
-                  className="w-full px-4 py-3 md:py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors text-base md:text-sm"
-                  onClick={() => handleCitySelect(city)}
-                >
-                  <div className="flex items-center gap-2">
-                    <MapPin className="text-gray-400" size={16} />
-                    {city}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-        
-        <div className="flex-1 p-4">
-          <Label htmlFor="dates" className="sr-only">Dates</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start border-none text-left font-normal shadow-none hover:bg-transparent",
-                  !dateRange?.from && "text-muted-foreground"
-                )}
-              >
-                <CalendarDays className="mr-3 h-5 w-5 text-primary" />
+              <CalendarDays className="text-primary flex-shrink-0" size={20} />
+              <span className="flex-grow text-left truncate">
                 {dateRange?.from ? (
                   dateRange.to ? (
                     <>
                       {format(dateRange.from, "d MMM", { locale: fr })} -{" "}
-                      {format(dateRange.to, "d MMM, yyyy", { locale: fr })}
+                      {format(dateRange.to, "d MMM", { locale: fr })}
                     </>
                   ) : (
-                    format(dateRange.from, "d MMM, yyyy", { locale: fr })
+                    format(dateRange.from, "d MMM", { locale: fr })
                   )
                 ) : (
                   "Sélectionnez les dates"
                 )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent 
-              className="w-screen md:w-auto p-0" 
-              align={isMobile ? "center" : "start"}
-              side={isMobile ? "bottom" : undefined}
-              sideOffset={isMobile ? 0 : 4}
-            >
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={dateRange?.from}
-                selected={dateRange}
-                onSelect={setDateRange}
-                numberOfMonths={isMobile ? 1 : 2}
-                locale={fr}
-                className="p-3"
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-        
-        <div className="flex items-center p-4">
-          <Button type="submit" className="w-full bg-primary hover:bg-primary-dark text-base md:text-sm h-11 md:h-10">
-            <Search className="mr-2" size={20} />
-            Rechercher
+              </span>
+            </Button>
+          </div>
+
+          <Button 
+            type="submit" 
+            className="w-full md:w-auto bg-primary hover:bg-primary-dark h-14 md:h-12 text-lg md:text-base font-medium rounded-xl"
+            disabled={isSearching}
+          >
+            {isSearching ? (
+              <div className="flex items-center">
+                <div className="animate-spin mr-2 h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+                Recherche...
+              </div>
+            ) : (
+              <>
+                <Search className="mr-2 h-5 w-5" />
+                Rechercher
+              </>
+            )}
           </Button>
         </div>
-      </div>
-    </form>
+      </form>
+
+      {/* Location Sheet for Mobile */}
+      <Sheet open={showLocationSheet && isMobile} onOpenChange={setShowLocationSheet}>
+        <SheetContent side="bottom" className="h-[90vh] p-0">
+          <div className="flex flex-col h-full">
+            <div className="sticky top-0 bg-white px-4 pt-6 pb-4 border-b border-gray-100">
+              <div className="relative">
+                <MapPin className="absolute left-3 top-3 text-gray-400" size={20} />
+                <input
+                  autoFocus
+                  type="text"
+                  value={location}
+                  onChange={(e) => handleLocationChange(e.target.value)}
+                  placeholder="Rechercher une ville"
+                  className="w-full h-12 pl-10 pr-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                />
+              </div>
+            </div>
+            
+            <div className="flex-1 overflow-auto px-4 py-4">
+              {recentSearches.length > 0 && !location && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-medium text-gray-500 mb-2">Recherches récentes</h3>
+                  {recentSearches.map((city) => (
+                    <button
+                      key={`recent-${city}`}
+                      type="button"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 rounded-lg transition-colors"
+                      onClick={() => handleCitySelect(city)}
+                    >
+                      <Clock className="text-gray-400" size={18} />
+                      <span>{city}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {filteredCities.map((city) => (
+                <button
+                  key={city}
+                  type="button"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 rounded-lg transition-colors"
+                  onClick={() => handleCitySelect(city)}
+                >
+                  <MapPin className="text-gray-400" size={18} />
+                  <span>{city}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Date Dialog */}
+      <Dialog open={showDateDialog} onOpenChange={setShowDateDialog}>
+        <DialogContent className="sm:max-w-[600px] p-0">
+          <DialogTitle className="sr-only">Sélection des dates de location</DialogTitle>
+          <DialogDescription className="sr-only">Choisissez les dates et heures de prise et retour du véhicule</DialogDescription>
+          <div className="p-6 space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Heure de prise</Label>
+                <Select value={pickupTime} onValueChange={setPickupTime}>
+                  <SelectTrigger className="mt-2">
+                    <SelectValue placeholder="Heure" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {HOURS.map((hour) => (
+                      <SelectItem key={hour} value={hour.toString()}>
+                        {hour.toString().padStart(2, '0')}:00
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Heure de retour</Label>
+                <Select value={returnTime} onValueChange={setReturnTime}>
+                  <SelectTrigger className="mt-2">
+                    <SelectValue placeholder="Heure" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {HOURS.map((hour) => (
+                      <SelectItem key={hour} value={hour.toString()}>
+                        {hour.toString().padStart(2, '0')}:00
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Calendar
+              mode="range"
+              selected={dateRange}
+              onSelect={setDateRange}
+              numberOfMonths={isMobile ? 1 : 2}
+              locale={fr}
+              className="rounded-md mx-auto"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

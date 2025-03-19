@@ -1,4 +1,5 @@
-
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { CalendarIcon, Clock, Shield, Star, Users, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,13 +12,25 @@ interface ReservationCardProps {
 }
 
 const ReservationCard = ({ vehicle, onReserve }: ReservationCardProps) => {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleReserveClick = () => {
+    onReserve();
+  };
+
+  const handleReservePageClick = () => {
+    setIsLoading(true);
+    navigate(`/cars/${vehicle.id}/reserve`);
+  };
+
   return (
     <Card className="border-2 hover:border-primary/40 transition-all duration-300">
       <CardContent className="p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <div className="text-2xl font-bold text-gray-900">
-              {vehicle.price} Dh <span className="text-sm font-normal text-gray-600">/jour</span>
+              {(vehicle.price_per_day ?? vehicle.price ?? 0)} Dh <span className="text-sm font-normal text-gray-600">/jour</span>
             </div>
             <div className="flex items-center mt-1 text-sm text-gray-600">
               <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
@@ -49,11 +62,20 @@ const ReservationCard = ({ vehicle, onReserve }: ReservationCardProps) => {
         <div className="pt-2 border-t border-gray-100">
           <Button 
             className="w-full bg-primary hover:bg-primary/90 text-white font-medium"
-            onClick={onReserve}
+            onClick={handleReserveClick}
             size="lg"
           >
             <CalendarIcon className="w-4 h-4 mr-2" />
             Réserver maintenant
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            className="w-full" 
+            onClick={handleReservePageClick}
+            disabled={isLoading}
+          >
+            {isLoading ? "Chargement..." : "Voir la page de réservation"}
           </Button>
           
           <div className="mt-4 flex items-center justify-center text-sm text-gray-600">

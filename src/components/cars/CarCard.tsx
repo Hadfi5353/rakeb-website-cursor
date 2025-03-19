@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Star, User, Calendar, Shield } from "lucide-react";
@@ -7,7 +6,7 @@ import SocialShare from "./SocialShare";
 
 interface CarCardProps {
   car: {
-    id: number | string;
+    id: string;
     name: string;
     image: string;
     price: string;
@@ -24,12 +23,14 @@ const CarCard = ({ car }: CarCardProps) => {
 
   const handleReservation = (e: React.MouseEvent) => {
     e.stopPropagation(); // Empêche le clic de buller jusqu'à la carte
-    navigate(`/cars/${car.id}/reserve`, { state: { car } });
+    window.scrollTo(0, 0);
+    navigate(`/cars/${car.id}`);
   };
 
   const handleCardClick = () => {
-    // Navigate to the car detail page
+    // Navigate to the car detail page and scroll to top
     console.log("Navigating to car detail page for ID:", car.id);
+    window.scrollTo(0, 0);
     navigate(`/cars/${car.id}`);
   };
 

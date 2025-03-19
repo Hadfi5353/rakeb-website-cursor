@@ -1,17 +1,67 @@
-
 import { Button } from "@/components/ui/button";
 import { Heart, ShieldCheck } from "lucide-react";
 import CarCard from "@/components/cars/CarCard";
 import { Vehicle } from "@/lib/types";
 import { toast } from "sonner";
+import { useState, useEffect } from "react";
+import { useFavorites } from "@/hooks/use-favorites";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface SearchResultsGridProps {
   vehicles: Vehicle[];
 }
 
 const SearchResultsGrid = ({ vehicles }: SearchResultsGridProps) => {
-  const addToFavorites = (carId: string) => {
-    toast.success("Véhicule ajouté aux favoris");
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { 
+    favorites: dbFavorites, 
+    toggleFavorite, 
+    getFavorites
+  } = useFavorites();
+
+  // Synchroniser les favoris avec la base de données au chargement
+  useEffect(() => {
+    if (user) {
+      const favIds = new Set<string>();
+      dbFavorites.forEach(fav => {
+        if (fav.vehicleId) {
+          favIds.add(fav.vehicleId);
+        }
+      });
+      setFavorites(favIds);
+    }
+  }, [user, dbFavorites]);
+
+  const addToFavorites = async (carId: string) => {
+    if (!user) {
+      toast.error("Vous devez être connecté pour ajouter des favoris");
+      navigate('/auth/login');
+      return;
+    }
+
+    try {
+      const success = await toggleFavorite(carId);
+      if (success) {
+        const newFavorites = new Set(favorites);
+        
+        if (favorites.has(carId)) {
+          newFavorites.delete(carId);
+        } else {
+          newFavorites.add(carId);
+        }
+        
+        setFavorites(newFavorites);
+        
+        // Rafraîchir la liste des favoris pour mettre à jour le tableau de bord
+        await getFavorites();
+      }
+    } catch (error) {
+      console.error("Erreur lors de la modification des favoris:", error);
+      toast.error("Une erreur est survenue lors de la modification des favoris");
+    }
   };
 
   return (
@@ -25,10 +75,15 @@ const SearchResultsGrid = ({ vehicles }: SearchResultsGridProps) => {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-2 right-2 z-10 bg-white/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
-            onClick={() => addToFavorites(car.id)}
+            className={`absolute top-2 right-2 z-10 bg-white/80 backdrop-blur-sm transition-all duration-300 hover:scale-110 ${
+              favorites.has(car.id) ? 'text-red-500' : 'opacity-0 group-hover:opacity-100'
+            }`}
+            onClick={(e) => {
+              e.stopPropagation();
+              addToFavorites(car.id);
+            }}
           >
-            <Heart className="w-4 h-4" />
+            <Heart className={`w-4 h-4 ${favorites.has(car.id) ? 'fill-current' : ''}`} />
           </Button>
           
           {car.isPremium && (

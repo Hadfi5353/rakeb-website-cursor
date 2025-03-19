@@ -22,6 +22,10 @@ import {
 } from "lucide-react";
 import FAQ from "@/components/FAQ";
 import Testimonials from "@/components/Testimonials";
+import { useAuth } from '@/contexts/AuthContext';
+import { useUpdateRole } from '@/hooks/useUpdateRole';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const steps = [
   {
@@ -70,6 +74,9 @@ const benefits = [
 ];
 
 const BecomeOwner = () => {
+  const { user, isLoading: authLoading } = useAuth();
+  const { updateRole, isLoading: updateLoading } = useUpdateRole();
+  const navigate = useNavigate();
   const [daysPerMonth, setDaysPerMonth] = useState(15);
   const [pricePerDay, setPricePerDay] = useState(300);
   const [carValue, setCarValue] = useState(150000);
@@ -84,6 +91,18 @@ const BecomeOwner = () => {
 
   const monthlyRevenue = calculateMonthlyRevenue();
   const annualRevenue = calculateAnnualRevenue();
+
+  const handleBecomeOwner = async () => {
+    if (!user) {
+      navigate('/auth/register', { state: { defaultRole: 'owner' } });
+      return;
+    }
+
+    const success = await updateRole('owner');
+    if (success) {
+      navigate('/owner/dashboard');
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -103,9 +122,9 @@ const BecomeOwner = () => {
               Gagnez jusqu'à 6 000 DH par mois en toute sécurité en partageant votre véhicule quand vous ne l'utilisez pas
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="bg-primary hover:bg-primary-dark">
+              <Button asChild size="lg" className="bg-primary hover:bg-primary-dark" onClick={handleBecomeOwner} disabled={authLoading || updateLoading}>
                 <Link to="/cars/add">
-                  Inscrire mon véhicule
+                  {updateLoading ? 'Traitement en cours...' : 'Inscrire mon véhicule'}
                   <ArrowRight className="ml-2" />
                 </Link>
               </Button>

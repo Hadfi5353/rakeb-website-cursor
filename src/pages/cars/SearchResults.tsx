@@ -1,19 +1,19 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { vehiclesApi } from "@/lib/api";
 import { Vehicle } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import SearchBar from "@/components/SearchBar";
 import CategoryButton from "@/components/cars/CategoryButton";
 import AdvancedFilters from "@/components/cars/AdvancedFilters";
 import SearchResultsHeader from "@/components/cars/SearchResultsHeader";
-import SearchResultsGrid from "@/components/cars/SearchResultsGrid";
+import EnhancedSearchResultsGrid from "@/components/cars/EnhancedSearchResultsGrid";
 import TrendsCard from "@/components/cars/TrendsCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { SlidersHorizontal, Star, ChevronDown, ChevronUp } from "lucide-react";
+import { useVehicleSearch } from "@/hooks/use-vehicle-search";
+import NoVehiclesFound from "@/components/cars/NoVehiclesFound";
 
 const carCategories = [
   "Toutes", "SUV", "Berline", "Sportive", "Luxe", "Électrique", "Familiale"
@@ -93,7 +93,6 @@ const exampleVehicles: Vehicle[] = [
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
-  const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([]);
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [selectedBrand, setSelectedBrand] = useState("all");
   const [selectedTransmission, setSelectedTransmission] = useState("all");
@@ -102,50 +101,50 @@ const SearchResults = () => {
   const [minRating, setMinRating] = useState(0);
   const [showPremiumOnly, setShowPremiumOnly] = useState(false);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const availableBrands = Array.from(new Set(exampleVehicles.map(v => v.brand)));
-
-  const { data: vehicles, isLoading } = useQuery({
-    queryKey: ['vehicles'],
-    queryFn: vehiclesApi.getVehicles,
+  
+  // Get search parameters from URL
+  const location = searchParams.get("location") || "";
+  const datesParam = searchParams.get("dates") || "";
+  let startDate = "";
+  let endDate = "";
+  
+  if (datesParam) {
+    const datesParts = datesParam.split(":");
+    if (datesParts.length === 2) {
+      startDate = datesParts[0];
+      endDate = datesParts[1];
+    }
+  }
+  
+  // Use our custom hook for vehicle search
+  const { 
+    vehicles: filteredVehicles, 
+    isLoading, 
+    availableBrands,
+    totalCount,
+    filteredCount
+  } = useVehicleSearch({
+    location,
+    startDate,
+    endDate,
+    category: selectedCategory,
+    minPrice: priceRange[0],
+    maxPrice: priceRange[1],
+    transmission: selectedTransmission,
+    isPremium: showPremiumOnly,
+    brand: selectedBrand,
+    minRating
   });
 
-  useEffect(() => {
-    let filtered = [...exampleVehicles];
-    
-    const location = searchParams.get("location")?.toLowerCase();
-    
-    if (location) {
-      filtered = filtered.filter(v => 
-        v.location.toLowerCase().includes(location)
-      );
-    }
-
-    if (selectedBrand && selectedBrand !== "all") {
-      filtered = filtered.filter(v => v.brand === selectedBrand);
-    }
-
-    if (selectedTransmission && selectedTransmission !== "all") {
-      filtered = filtered.filter(v => v.transmission === selectedTransmission);
-    }
-
-    if (selectedCategory !== "Toutes") {
-      filtered = filtered.filter(v => v.category === selectedCategory);
-    }
-
-    filtered = filtered.filter(v => 
-      v.price >= priceRange[0] && v.price <= priceRange[1]
-    );
-
-    if (minRating > 0) {
-      filtered = filtered.filter(v => (v.rating || 0) >= minRating);
-    }
-
-    if (showPremiumOnly) {
-      filtered = filtered.filter(v => v.isPremium);
-    }
-
-    setFilteredVehicles(filtered);
-  }, [searchParams, selectedBrand, selectedTransmission, selectedCategory, priceRange, minRating, showPremiumOnly]);
+  // Function to reset all filters
+  const resetFilters = () => {
+    setPriceRange([0, 1000]);
+    setSelectedBrand("all");
+    setSelectedTransmission("all");
+    setSelectedCategory("Toutes");
+    setMinRating(0);
+    setShowPremiumOnly(false);
+  };
 
   if (isLoading) {
     return (
@@ -180,14 +179,103 @@ const SearchResults = () => {
         />
 
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-          <div className="w-full lg:w-64 space-y-6">
-            <Card className="p-4 sm:p-6 backdrop-blur-xl bg-white/80 border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <div className="w-full lg:w-72 space-y-4">
+            <Card className="p-4 backdrop-blur-xl bg-white/80 border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="flex items-center justify-between lg:hidden mb-4">
+                <h3 className="font-semibold">Filtres</h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={resetFilters}
+                >
+                  Réinitialiser
+                </Button>
+              </div>
+
               <div className="space-y-6">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="text-sm font-medium text-gray-700">
+                      Prix par jour
+                    </label>
+                    <span className="text-xs font-medium text-primary">
+                      {priceRange[0]} - {priceRange[1]} Dh
+                    </span>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="relative py-4">
+                      <div className="absolute -top-2 left-0 right-0 flex justify-between text-xs text-gray-400">
+                        <span>0</span>
+                        <span>1000</span>
+                      </div>
+                      <Slider
+                        value={priceRange}
+                        onValueChange={setPriceRange}
+                        max={1000}
+                        step={50}
+                        className="my-2 [&_.relative]:bg-gray-100 [&_[role=slider]]:bg-primary [&_[role=slider]]:border-primary [&_[role=slider]]:shadow-md [&_.range]:bg-primary"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          value={priceRange[0]}
+                          onChange={e => {
+                            const value = Math.min(Math.max(0, +e.target.value), priceRange[1]);
+                            setPriceRange([value, priceRange[1]]);
+                          }}
+                          className="pl-8 pr-4 text-sm h-8 bg-white focus:ring-primary"
+                          min={0}
+                          max={priceRange[1]}
+                        />
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-gray-500">Dh</span>
+                      </div>
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          value={priceRange[1]}
+                          onChange={e => {
+                            const value = Math.max(Math.min(1000, +e.target.value), priceRange[0]);
+                            setPriceRange([priceRange[0], value]);
+                          }}
+                          className="pl-8 pr-4 text-sm h-8 bg-white focus:ring-primary"
+                          min={priceRange[0]}
+                          max={1000}
+                        />
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-gray-500">Dh</span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { label: "≤ 300 Dh", values: [0, 300] },
+                        { label: "≤ 500 Dh", values: [0, 500] },
+                        { label: "≤ 800 Dh", values: [0, 800] },
+                        { label: "≤ 1000 Dh", values: [0, 1000] }
+                      ].map((range) => (
+                        <Button
+                          key={range.label}
+                          variant="outline"
+                          size="sm"
+                          className={`h-8 text-xs font-medium transition-all ${
+                            priceRange[1] === range.values[1]
+                              ? "bg-primary/10 border-primary text-primary hover:bg-primary/20"
+                              : "hover:border-primary/50 hover:text-primary/90"
+                          }`}
+                          onClick={() => setPriceRange(range.values)}
+                        >
+                          {range.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium mb-3 text-gray-700">
                     Catégorie
                   </label>
-                  <div className="grid grid-cols-1 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2">
                     {carCategories.map((category) => (
                       <CategoryButton
                         key={category}
@@ -201,46 +289,20 @@ const SearchResults = () => {
 
                 <div>
                   <label className="block text-sm font-medium mb-3 text-gray-700">
-                    Prix par jour
-                  </label>
-                  <div className="space-y-4">
-                    <Slider
-                      value={priceRange}
-                      onValueChange={setPriceRange}
-                      max={1000}
-                      step={50}
-                      className="my-6"
-                    />
-                    <div className="flex items-center gap-4">
-                      <Input
-                        type="number"
-                        value={priceRange[0]}
-                        onChange={e => setPriceRange([+e.target.value, priceRange[1]])}
-                        className="w-24"
-                      />
-                      <span>-</span>
-                      <Input
-                        type="number"
-                        value={priceRange[1]}
-                        onChange={e => setPriceRange([priceRange[0], +e.target.value])}
-                        className="w-24"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-3 text-gray-700">
                     Note minimale
                   </label>
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-4 gap-1">
                     {[0, 3, 4, 4.5].map((rating) => (
                       <Button
                         key={rating}
                         variant={minRating === rating ? "default" : "outline"}
                         size="sm"
                         onClick={() => setMinRating(rating)}
-                        className="flex-1 transition-all duration-300 hover:scale-[1.02]"
+                        className={`h-8 text-xs transition-all ${
+                          minRating === rating
+                            ? "bg-primary text-white"
+                            : "hover:bg-primary/5"
+                        }`}
                       >
                         {rating > 0 ? (
                           <div className="flex items-center gap-1">
@@ -255,46 +317,41 @@ const SearchResults = () => {
                   </div>
                 </div>
 
-                <Button
-                  variant="outline"
-                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                  className="w-full justify-between"
-                >
-                  <div className="flex items-center gap-2">
-                    <SlidersHorizontal className="w-4 h-4" />
-                    Filtres avancés
-                  </div>
-                  {showAdvancedFilters ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
-                </Button>
+                <div className="pt-4 border-t border-gray-100">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                    className="w-full justify-between h-8 text-sm"
+                  >
+                    <div className="flex items-center gap-2">
+                      <SlidersHorizontal className="w-4 h-4" />
+                      Plus de filtres
+                    </div>
+                    {showAdvancedFilters ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </Button>
 
-                {showAdvancedFilters && (
-                  <AdvancedFilters
-                    selectedBrand={selectedBrand}
-                    setSelectedBrand={setSelectedBrand}
-                    selectedTransmission={selectedTransmission}
-                    setSelectedTransmission={setSelectedTransmission}
-                    showPremiumOnly={showPremiumOnly}
-                    setShowPremiumOnly={setShowPremiumOnly}
-                    availableBrands={availableBrands}
-                  />
-                )}
+                  {showAdvancedFilters && (
+                    <AdvancedFilters
+                      selectedBrand={selectedBrand}
+                      setSelectedBrand={setSelectedBrand}
+                      selectedTransmission={selectedTransmission}
+                      setSelectedTransmission={setSelectedTransmission}
+                      showPremiumOnly={showPremiumOnly}
+                      setShowPremiumOnly={setShowPremiumOnly}
+                      availableBrands={availableBrands}
+                    />
+                  )}
+                </div>
               </div>
 
               <Button 
                 variant="outline" 
-                className="w-full mt-6"
-                onClick={() => {
-                  setSelectedBrand("all");
-                  setSelectedTransmission("all");
-                  setSelectedCategory("Toutes");
-                  setPriceRange([0, 1000]);
-                  setMinRating(0);
-                  setShowPremiumOnly(false);
-                }}
+                className="w-full mt-6 hidden lg:flex"
+                onClick={resetFilters}
               >
                 Réinitialiser les filtres
               </Button>
@@ -304,23 +361,22 @@ const SearchResults = () => {
           </div>
 
           <div className="flex-1">
-            {viewMode === "grid" ? (
-              <SearchResultsGrid vehicles={filteredVehicles} />
+            {filteredVehicles.length > 0 ? (
+              viewMode === "grid" ? (
+                <EnhancedSearchResultsGrid 
+                  vehicles={filteredVehicles} 
+                  isLoading={isLoading} 
+                />
+              ) : (
+                <div className="bg-white rounded-xl p-4 h-[600px] flex items-center justify-center">
+                  <p className="text-gray-500">Carte en cours de développement</p>
+                </div>
+              )
             ) : (
-              <div className="bg-white/80 backdrop-blur-xl rounded-xl h-[600px] flex items-center justify-center border-0 shadow-lg">
-                <p className="text-gray-500">Carte en cours de développement</p>
-              </div>
-            )}
-
-            {filteredVehicles.length === 0 && (
-              <div className="text-center py-12 bg-white/80 backdrop-blur-xl rounded-xl border-0 shadow-lg">
-                <h2 className="text-xl font-semibold mb-2">
-                  Aucun véhicule trouvé
-                </h2>
-                <p className="text-gray-600">
-                  Essayez de modifier vos critères de recherche
-                </p>
-              </div>
+              <NoVehiclesFound 
+                location={location} 
+                onReset={resetFilters} 
+              />
             )}
           </div>
         </div>

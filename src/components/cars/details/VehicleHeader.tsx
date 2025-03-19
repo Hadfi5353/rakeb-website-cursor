@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Heart, MapPin, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,7 @@ const VehicleHeader = ({ vehicle, isFavorite, onToggleFavorite }: VehicleHeaderP
         <div className="flex gap-2">
           <SocialShare car={{
             name: `${vehicle.brand} ${vehicle.model} ${vehicle.year}`,
-            price: vehicle.price.toString(),
+            price: String(vehicle.price_per_day ?? vehicle.price ?? 0),
             location: vehicle.location,
           }} />
           <Button 

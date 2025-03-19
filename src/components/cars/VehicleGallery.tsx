@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, X, Maximize2 } from "lucide-react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -82,6 +81,7 @@ const VehicleGallery = ({ images }: VehicleGalleryProps) => {
       {/* Fullscreen gallery */}
       <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
         <DialogContent className="max-w-[95vw] h-[95vh] p-0">
+          <DialogTitle className="sr-only">Galerie d'images du véhicule</DialogTitle>
           <div className="relative w-full h-full">
             <img
               src={images[currentIndex]}

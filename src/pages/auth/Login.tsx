@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -24,39 +23,11 @@ const Login = () => {
     
     try {
       await signIn(formData.email, formData.password);
-      const role = await getUserRole();
-      
-      if (!role) {
-        navigate('/profile');
-        toast({
-          title: "Configuration requise",
-          description: "Veuillez configurer votre profil pour continuer",
-        });
-        return;
-      }
-
-      switch (role) {
-        case 'owner':
-          toast({
-            title: "Connexion réussie",
-            description: "Bienvenue sur votre tableau de bord propriétaire",
-          });
-          navigate('/dashboard/owner');
-          break;
-        case 'renter':
-          toast({
-            title: "Connexion réussie",
-            description: "Bienvenue sur votre tableau de bord locataire",
-          });
-          navigate('/dashboard/renter');
-          break;
-        default:
-          navigate('/profile');
-          toast({
-            title: "Configuration requise",
-            description: "Veuillez configurer votre profil pour continuer",
-          });
-      }
+      toast({
+        title: "Connexion réussie",
+        description: "Bienvenue sur Rakeb",
+      });
+      navigate('/');
     } catch (error) {
       console.error("Erreur lors de la connexion:", error);
       toast({

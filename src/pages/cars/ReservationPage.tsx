@@ -1,778 +1,664 @@
-
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { vehiclesApi } from "@/lib/api";
+import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle, CreditCard, Info, Shield, Tag, Car, MapPin, Star, ArrowLeft, 
-  Clock, Users, CalendarIcon, ChevronRight, AlertCircle, Zap } from "lucide-react";
-import { toast } from "sonner";
-import { useIsMobile } from "@/hooks/use-mobile";
-
-const insuranceOptions = [
-  {
-    id: "basic",
-    name: "Basique",
-    description: "Couverture des dommages matériels de base",
-    price: 50,
-    caution: 5000,
-    features: ["Dommages matériels", "Assistance routière", "Responsabilité civile"],
-  },
-  {
-    id: "premium",
-    name: "Premium",
-    description: "Couverture complète avec assistance 24/7",
-    price: 100,
-    caution: 1000,
-    features: ["Tout inclus en Basique", "Vol et incendie", "Assistance 24/7", "Conducteur supplémentaire inclus"],
-  },
-  {
-    id: "zero",
-    name: "Zéro Souci",
-    description: "Zéro franchise, zéro stress",
-    price: 150,
-    caution: 0,
-    features: ["Tout inclus en Premium", "Aucune caution", "Livraison incluse", "Plein d'essence offert"],
-  },
-];
-
-const additionalOptions = [
-  {
-    id: "gps",
-    name: "GPS Premium",
-    price: 20,
-    description: "Navigation professionnelle avec mise à jour en temps réel"
-  },
-  {
-    id: "childSeat",
-    name: "Siège enfant",
-    price: 15,
-    description: "Siège homologué adapté pour enfants de 9 à 36kg"
-  },
-  {
-    id: "delivery",
-    name: "Livraison à domicile",
-    price: 50,
-    description: "Livraison et récupération du véhicule à l'adresse de votre choix"
-  }
-];
-
-const paymentMethods = [
-  { id: "card", name: "Carte bancaire", icon: CreditCard },
-  { id: "applepay", name: "Apple Pay", icon: CreditCard },
-  { id: "googlepay", name: "Google Pay", icon: CreditCard },
-];
+import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
+import { format, addDays, differenceInDays, isBefore } from "date-fns";
+import { fr } from "date-fns/locale";
+import { ArrowLeft, Car, MapPin, Calendar as CalendarIcon, Shield, CreditCard as CreditCardIcon, AlertCircle, CheckCheck } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const ReservationPage = () => {
-  const location = useLocation();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const car = location.state?.car;
-  const isMobile = useIsMobile();
-
-  const [currentStep, setCurrentStep] = useState(1);
-  const [startDate, setStartDate] = useState<Date>();
-  const [endDate, setEndDate] = useState<Date>();
-  const [selectedInsurance, setSelectedInsurance] = useState("basic");
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [selectedPayment, setSelectedPayment] = useState("card");
-  const [promoCode, setPromoCode] = useState("");
-  const [promoApplied, setPromoApplied] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    cardNumber: "",
-    expiry: "",
-    cvv: "",
+  const { toast } = useToast();
+  const { user } = useAuth();
+  
+  const [startDate, setStartDate] = useState<Date>(addDays(new Date(), 1));
+  const [endDate, setEndDate] = useState<Date>(addDays(new Date(), 8));
+  const [pickupLocation, setPickupLocation] = useState("");
+  const [returnLocation, setReturnLocation] = useState("");
+  const [message, setMessage] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [step, setStep] = useState(1);
+  const [selectedInsurance, setSelectedInsurance] = useState<string | null>(null);
+  
+  const { data: vehicle, isLoading, error } = useQuery({
+    queryKey: ['vehicle', id],
+    queryFn: () => vehiclesApi.getVehicle(id || ''),
+    enabled: !!id,
   });
-
-  if (!car) {
+  
+  useEffect(() => {
+    if (vehicle) {
+      setPickupLocation(vehicle.location || "");
+      setReturnLocation(vehicle.location || "");
+    }
+  }, [vehicle]);
+  
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-24 px-4">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-2xl font-bold mb-4">Véhicule non trouvé</h1>
-          <p className="text-gray-600 mb-6">Désolé, nous n'avons pas pu trouver le véhicule que vous souhaitez réserver.</p>
-          <Button onClick={() => navigate('/')}>Retour à l'accueil</Button>
+      <div className="min-h-screen bg-gray-50 pt-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 w-1/3 rounded mb-4" />
+            <div className="h-[30vh] bg-gray-200 rounded-lg mb-8" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="md:col-span-2">
+                <div className="h-12 bg-gray-200 rounded mb-4" />
+                <div className="h-64 bg-gray-200 rounded" />
+              </div>
+              <div>
+                <div className="h-64 bg-gray-200 rounded" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const toggleOption = (optionId: string) => {
-    setSelectedOptions(prev => 
-      prev.includes(optionId) 
-        ? prev.filter(id => id !== optionId)
-        : [...prev, optionId]
+  
+  if (error || !vehicle) {
+    return (
+      <div className="min-h-screen bg-gray-50 pt-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Erreur lors du chargement
+          </h1>
+          <p className="text-gray-600 mb-4">
+            Une erreur s'est produite lors du chargement des détails du véhicule.
+          </p>
+          <Button onClick={() => navigate(-1)}>
+            Retourner à la recherche
+          </Button>
+        </div>
+      </div>
     );
+  }
+  
+  // Calculer le prix total
+  const durationDays = differenceInDays(endDate, startDate) || 1;
+  const dailyRate = vehicle.price_per_day || vehicle.price || 0;
+  const basePrice = dailyRate * durationDays;
+  const insurancePrice = selectedInsurance === 'basic' ? durationDays * 50 : selectedInsurance === 'premium' ? durationDays * 100 : 0;
+  const serviceFee = Math.round(basePrice * 0.10); // 10% de frais de service
+  const totalPrice = basePrice + serviceFee + insurancePrice;
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour effectuer une réservation",
+        variant: "destructive",
+      });
+      navigate("/auth/login");
+      return;
+    }
+    
+    if (!startDate || !endDate) {
+      toast({
+        title: "Dates manquantes",
+        description: "Veuillez sélectionner des dates de début et de fin",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (isBefore(endDate, startDate)) {
+      toast({
+        title: "Dates invalides",
+        description: "La date de fin doit être après la date de début",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!pickupLocation) {
+      toast({
+        title: "Lieu de prise en charge manquant",
+        description: "Veuillez indiquer le lieu de prise en charge",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!returnLocation) {
+      toast({
+        title: "Lieu de retour manquant",
+        description: "Veuillez indiquer le lieu de retour",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!acceptTerms) {
+      toast({
+        title: "Conditions non acceptées",
+        description: "Veuillez accepter les conditions générales",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Créer la réservation dans la base de données
+      const { data: vehicleData, error: vehicleError } = await supabase
+        .from('vehicles')
+        .select('owner_id')
+        .eq('id', id)
+        .single();
+      
+      if (vehicleError) {
+        throw new Error("Impossible de récupérer les informations du véhicule");
+      }
+      
+      const ownerId = vehicleData.owner_id;
+      
+      // Calculer la durée et les prix
+      const durationDays = differenceInDays(endDate, startDate) || 1;
+      const basePrice = dailyRate * durationDays;
+      const insurancePrice = selectedInsurance === 'basic' ? durationDays * 50 : selectedInsurance === 'premium' ? durationDays * 100 : 0;
+      const serviceFee = Math.round(basePrice * 0.10); // 10% de frais de service
+      const totalPrice = basePrice + serviceFee + insurancePrice;
+      
+      const { error: bookingError } = await supabase
+        .from('bookings')
+        .insert({
+          vehicle_id: id,
+          renter_id: user.id,
+          owner_id: ownerId,
+          start_date: startDate.toISOString(),
+          end_date: endDate.toISOString(),
+          pickup_location: pickupLocation,
+          return_location: returnLocation,
+          base_price: basePrice,
+          service_fee: serviceFee,
+          insurance_fee: insurancePrice,
+          total_price: totalPrice,
+          status: 'pending',
+          duration_days: durationDays,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+      
+      if (bookingError) {
+        throw bookingError;
+      }
+      
+      toast({
+        title: "Réservation confirmée",
+        description: "Votre demande de réservation a été envoyée au propriétaire",
+      });
+      navigate("/dashboard/renter");
+    } catch (error) {
+      console.error("Erreur lors de la réservation:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la réservation",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-
-  const calculateTotal = () => {
-    if (!startDate || !endDate || !car) return 0;
-    const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    
-    // Base price
-    let total = days * parseInt(car.price);
-    
-    // Insurance cost
-    if (selectedInsurance) {
-      const insurance = insuranceOptions.find(opt => opt.id === selectedInsurance);
-      if (insurance) {
-        total += insurance.price * days;
+  
+  const nextStep = () => {
+    if (step === 1) {
+      if (!startDate || !endDate) {
+        toast({
+          title: "Dates manquantes",
+          description: "Veuillez sélectionner des dates de début et de fin",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (isBefore(endDate, startDate)) {
+        toast({
+          title: "Dates invalides",
+          description: "La date de fin doit être après la date de début",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (!pickupLocation || !returnLocation) {
+        toast({
+          title: "Lieux manquants",
+          description: "Veuillez indiquer les lieux de prise en charge et de retour",
+          variant: "destructive",
+        });
+        return;
       }
     }
     
-    // Additional options
-    selectedOptions.forEach(optionId => {
-      const option = additionalOptions.find(opt => opt.id === optionId);
-      if (option) {
-        total += option.price;
-      }
-    });
-    
-    // Apply promo code
-    if (promoApplied) {
-      total = total * 0.9; // 10% discount
-    }
-    
-    return Math.round(total);
+    setStep(step + 1);
+    window.scrollTo(0, 0);
   };
-
-  const getSelectedInsurance = () => {
-    return insuranceOptions.find(ins => ins.id === selectedInsurance);
+  
+  const prevStep = () => {
+    setStep(step - 1);
+    window.scrollTo(0, 0);
   };
-
-  const handleSubmit = () => {
-    toast.success("Réservation confirmée ! Vous allez recevoir un email de confirmation.", {
-      duration: 5000,
-      description: "Les détails de votre réservation ont été envoyés à votre adresse email."
-    });
-    navigate('/');
-  };
-
-  const applyPromoCode = () => {
-    if (promoCode.toUpperCase() === "WELCOME") {
-      setPromoApplied(true);
-      toast.success("Code promo appliqué ! -10% sur votre réservation");
-    } else {
-      toast.error("Code promo invalide");
-      setPromoCode("");
-    }
-  };
-
-  const getProgress = () => {
-    return (currentStep / 5) * 100;
-  };
-
-  const canContinue = () => {
-    switch (currentStep) {
-      case 1:
-        return startDate && endDate;
-      case 2:
-        return selectedInsurance !== "";
-      case 3:
-        return formData.fullName && formData.email && formData.phone;
-      case 4:
-        return formData.cardNumber && formData.expiry && formData.cvv;
-      default:
-        return true;
-    }
-  };
-
-  const getStepTitle = () => {
-    switch (currentStep) {
-      case 1: return "Détails et dates";
-      case 2: return "Assurance et options";
-      case 3: return "Vos informations";
-      case 4: return "Paiement sécurisé";
-      case 5: return "Confirmation";
-      default: return "";
-    }
-  };
-
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <div className="space-y-6">
-            <div className="p-4 border rounded-lg bg-primary/5 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-medium flex items-center gap-2">
-                  <Car className="w-4 h-4 text-primary" />
-                  Détails du véhicule
-                </h3>
-                {car.rating && (
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                    <span className="font-medium">{car.rating}</span>
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex flex-col space-y-2 text-sm">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center text-gray-700">
-                    <Car className="w-4 h-4 mr-2 text-gray-500" />
-                    <span>{car.name}</span>
-                  </div>
-                  <div className="flex items-center text-gray-700">
-                    <MapPin className="w-4 h-4 mr-2 text-gray-500" />
-                    <span>{car.location}</span>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center text-gray-700">
-                    <Users className="w-4 h-4 mr-2 text-gray-500" />
-                    <span>{car.seats || "5"} places</span>
-                  </div>
-                  <div className="flex items-center text-gray-700">
-                    <Clock className="w-4 h-4 mr-2 text-gray-500" />
-                    <span>Confirmation instantanée</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="font-medium flex items-center gap-2">
-                <CalendarIcon className="w-4 h-4 text-primary" />
-                Dates de location
-              </h3>
-              <div className={`grid ${isMobile ? 'grid-cols-1 gap-6' : 'sm:grid-cols-2 gap-4'}`}>
-                <div>
-                  <Label className="text-sm text-gray-600">Début</Label>
-                  <Calendar
-                    mode="single"
-                    selected={startDate}
-                    onSelect={setStartDate}
-                    className={`rounded-md border ${isMobile ? 'w-full' : ''}`}
-                    disabled={(date) => date < new Date()}
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm text-gray-600">Fin</Label>
-                  <Calendar
-                    mode="single"
-                    selected={endDate}
-                    onSelect={setEndDate}
-                    className={`rounded-md border ${isMobile ? 'w-full' : ''}`}
-                    disabled={(date) => !startDate || date < startDate}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {startDate && endDate && (
-              <div className="p-4 border rounded-lg bg-gray-50 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Durée de location :</span>
-                  <span className="font-medium">
-                    {Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))} jours
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Prix par jour :</span>
-                  <span className="font-medium">{car.price} Dh</span>
-                </div>
-                <div className="flex justify-between pt-2 border-t text-primary font-bold">
-                  <span>Prix total estimé :</span>
-                  <span>{calculateTotal()} Dh</span>
-                </div>
-              </div>
-            )}
-          </div>
-        );
-
-      case 2:
-        return (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-medium flex items-center gap-2">
-                <Shield className="w-4 h-4 text-primary" />
-                Options d'assurance
-              </h3>
-              <RadioGroup
-                value={selectedInsurance}
-                onValueChange={setSelectedInsurance}
-                className="space-y-4"
-              >
-                {insuranceOptions.map((option) => (
-                  <div 
-                    key={option.id}
-                    className={`p-4 border rounded-lg transition-all ${
-                      selectedInsurance === option.id 
-                        ? 'border-primary bg-primary/5' 
-                        : 'hover:border-primary/50'
-                    }`}
-                  >
-                    <div className="flex items-start space-x-3">
-                      <RadioGroupItem value={option.id} id={option.id} />
-                      <div className="flex-1">
-                        <div className="flex justify-between items-center flex-wrap">
-                          <Label htmlFor={option.id} className="font-medium">
-                            {option.name}
-                          </Label>
-                          <span className="text-sm font-medium text-primary">{option.price} Dh/jour</span>
-                        </div>
-                        <p className="text-sm text-gray-500 mt-1 mb-2">
-                          {option.description}
-                        </p>
-                        <div className="flex items-center text-sm text-gray-600 mb-2">
-                          <AlertCircle className="w-4 h-4 mr-1 text-amber-500 flex-shrink-0" />
-                          <span>Caution : {option.caution > 0 ? `${option.caution} Dh` : "Aucune caution"}</span>
-                        </div>
-                        <ul className="space-y-1">
-                          {option.features.map((feature, index) => (
-                            <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
-                              <CheckCircle className="w-3 h-3 text-primary mt-1 flex-shrink-0" />
-                              <span>{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
+  
+  return (
+    <div className="min-h-screen bg-gray-50 pt-16 pb-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="py-6">
+          <Link to={`/cars/${id}`} className="inline-flex items-center text-sm text-gray-600 hover:text-primary transition-colors">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Retour aux détails du véhicule
+          </Link>
+          
+          <h1 className="text-2xl font-bold mt-4 flex items-center">
+            <Car className="w-6 h-6 mr-2 text-primary" />
+            Réservation de {vehicle.name || `${vehicle.make} ${vehicle.model} ${vehicle.year}`}
+          </h1>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="md:col-span-2 space-y-6">
+            {/* Étape 1: Dates et lieux */}
+            {step === 1 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xl">Étape 1: Dates et lieux</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="startDate">Date de début</Label>
+                      <div className="border rounded-md p-2">
+                        <Calendar
+                          mode="single"
+                          selected={startDate}
+                          onSelect={(date: Date | undefined) => date && setStartDate(date)}
+                          disabled={(date: Date) => date < addDays(new Date(), 1)}
+                          initialFocus
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="endDate">Date de fin</Label>
+                      <div className="border rounded-md p-2">
+                        <Calendar
+                          mode="single"
+                          selected={endDate}
+                          onSelect={(date: Date | undefined) => date && setEndDate(date)}
+                          disabled={(date: Date) => date <= startDate}
+                          initialFocus
+                        />
                       </div>
                     </div>
                   </div>
-                ))}
-              </RadioGroup>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="font-medium flex items-center gap-2">
-                <Zap className="w-4 h-4 text-primary" />
-                Options supplémentaires
-              </h3>
-              <div className="space-y-3">
-                {additionalOptions.map((option) => (
-                  <div 
-                    key={option.id}
-                    className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                      selectedOptions.includes(option.id) 
-                        ? 'border-primary bg-primary/5' 
-                        : 'hover:border-primary/50'
-                    }`}
-                    onClick={() => toggleOption(option.id)}
-                  >
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 ${
-                          selectedOptions.includes(option.id) ? 'bg-primary border-primary' : 'border-gray-300'
-                        }`}>
-                          {selectedOptions.includes(option.id) && <CheckCircle className="w-4 h-4 text-white" />}
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="pickupLocation">Lieu de prise en charge</Label>
+                    <Input
+                      id="pickupLocation"
+                      value={pickupLocation}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPickupLocation(e.target.value)}
+                      placeholder="Adresse de prise en charge"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="returnLocation">Lieu de retour</Label>
+                    <Input
+                      id="returnLocation"
+                      value={returnLocation}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReturnLocation(e.target.value)}
+                      placeholder="Adresse de retour"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="flex justify-end">
+                    <Button onClick={nextStep}>
+                      Continuer
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {/* Étape 2: Options d'assurance */}
+            {step === 2 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xl">Étape 2: Options d'assurance</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div 
+                      className={`border rounded-md p-4 cursor-pointer transition-colors ${selectedInsurance === 'none' ? 'border-primary bg-primary/5' : 'hover:border-gray-400'}`}
+                      onClick={() => setSelectedInsurance('none')}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-medium">Sans assurance</h3>
+                          <p className="text-sm text-gray-500 mt-1">
+                            Aucune protection supplémentaire. Vous êtes responsable de tous les dommages.
+                          </p>
+                        </div>
+                        <div className="font-medium">0 MAD</div>
+                      </div>
+                      {selectedInsurance === 'none' && (
+                        <div className="mt-2 flex items-center text-primary">
+                          <CheckCheck className="w-4 h-4 mr-1" />
+                          <span className="text-sm">Sélectionné</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div 
+                      className={`border rounded-md p-4 cursor-pointer transition-colors ${selectedInsurance === 'basic' ? 'border-primary bg-primary/5' : 'hover:border-gray-400'}`}
+                      onClick={() => setSelectedInsurance('basic')}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-medium">Assurance de base</h3>
+                          <p className="text-sm text-gray-500 mt-1">
+                            Couverture des dommages matériels jusqu'à 50 000 MAD avec une franchise de 5 000 MAD.
+                          </p>
+                        </div>
+                        <div className="font-medium">50 MAD/jour</div>
+                      </div>
+                      {selectedInsurance === 'basic' && (
+                        <div className="mt-2 flex items-center text-primary">
+                          <CheckCheck className="w-4 h-4 mr-1" />
+                          <span className="text-sm">Sélectionné</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div 
+                      className={`border rounded-md p-4 cursor-pointer transition-colors ${selectedInsurance === 'premium' ? 'border-primary bg-primary/5' : 'hover:border-gray-400'}`}
+                      onClick={() => setSelectedInsurance('premium')}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-medium">Assurance premium</h3>
+                          <p className="text-sm text-gray-500 mt-1">
+                            Couverture complète sans franchise. Inclut l'assistance routière 24/7 et le véhicule de remplacement.
+                          </p>
+                        </div>
+                        <div className="font-medium">100 MAD/jour</div>
+                      </div>
+                      {selectedInsurance === 'premium' && (
+                        <div className="mt-2 flex items-center text-primary">
+                          <CheckCheck className="w-4 h-4 mr-1" />
+                          <span className="text-sm">Sélectionné</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <Button variant="outline" onClick={prevStep}>
+                      Retour
+                    </Button>
+                    <Button onClick={nextStep}>
+                      Continuer
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {/* Étape 3: Confirmation et paiement */}
+            {step === 3 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xl">Étape 3: Confirmation et paiement</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 p-4 rounded-md space-y-3">
+                      <h3 className="font-medium">Récapitulatif de la réservation</h3>
+                      
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <CalendarIcon className="w-4 h-4 text-gray-500" />
+                          <span>Date de début:</span>
+                        </div>
+                        <div>{format(startDate, 'PPP', { locale: fr })}</div>
+                        
+                        <div className="flex items-center gap-2">
+                          <CalendarIcon className="w-4 h-4 text-gray-500" />
+                          <span>Date de fin:</span>
+                        </div>
+                        <div>{format(endDate, 'PPP', { locale: fr })}</div>
+                        
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-gray-500" />
+                          <span>Lieu de prise en charge:</span>
+                        </div>
+                        <div>{pickupLocation}</div>
+                        
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-gray-500" />
+                          <span>Lieu de retour:</span>
+                        </div>
+                        <div>{returnLocation}</div>
+                        
+                        <div className="flex items-center gap-2">
+                          <Shield className="w-4 h-4 text-gray-500" />
+                          <span>Assurance:</span>
                         </div>
                         <div>
-                          <p className="font-medium text-sm">{option.name}</p>
-                          <p className="text-xs text-gray-500">{option.description}</p>
+                          {selectedInsurance === 'none' && "Sans assurance"}
+                          {selectedInsurance === 'basic' && "Assurance de base"}
+                          {selectedInsurance === 'premium' && "Assurance premium"}
                         </div>
                       </div>
-                      <span className="text-sm font-medium ml-auto">{option.price} Dh</span>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="p-4 rounded-lg bg-primary/5 space-y-2">
-              <div className="flex items-center justify-between text-sm text-gray-600">
-                <span>Sous-total :</span>
-                <span>{calculateTotal() - (promoApplied ? calculateTotal() * 0.1 : 0)} Dh</span>
-              </div>
-              {promoApplied && (
-                <div className="flex items-center justify-between text-sm text-green-600">
-                  <span>Réduction (WELCOME) :</span>
-                  <span>-{Math.round(calculateTotal() * 0.1)} Dh</span>
-                </div>
-              )}
-              <div className="flex items-center justify-between text-base font-bold text-primary pt-2 border-t">
-                <span>Total :</span>
-                <span>{calculateTotal()} Dh</span>
-              </div>
-            </div>
-          </div>
-        );
-        
-      case 3:
-        return (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-medium text-lg flex items-center gap-2">
-                <Info className="w-4 h-4 text-primary" />
-                Informations personnelles
-              </h3>
-              <div className="grid gap-4">
-                <div className={`grid ${isMobile ? 'grid-cols-1' : 'sm:grid-cols-2'} gap-4`}>
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Nom complet</Label>
-                    <Input
-                      id="fullName"
-                      name="fullName"
-                      placeholder="Votre nom complet"
-                      value={formData.fullName}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Téléphone</Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      placeholder="Votre numéro"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="votre@email.com"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Tag className="w-4 h-4 text-primary" />
-                <Label>Code promo</Label>
-              </div>
-              <div className={`flex gap-2 ${isMobile ? 'flex-col' : ''}`}>
-                <Input
-                  placeholder="Ex: WELCOME"
-                  value={promoCode}
-                  onChange={(e) => setPromoCode(e.target.value)}
-                  disabled={promoApplied}
-                />
-                <Button 
-                  variant="outline"
-                  onClick={applyPromoCode}
-                  className={`whitespace-nowrap ${isMobile ? 'w-full' : ''}`}
-                  disabled={promoApplied || !promoCode}
-                >
-                  Appliquer
-                </Button>
-              </div>
-              {promoApplied && (
-                <div className="text-sm text-green-600 flex items-center">
-                  <CheckCircle className="w-4 h-4 mr-1 flex-shrink-0" />
-                  <span>Code promo WELCOME appliqué : -10%</span>
-                </div>
-              )}
-            </div>
-            
-            <div className="p-4 border rounded-lg bg-gray-50 space-y-3">
-              <h4 className="font-medium text-gray-700">Récapitulatif</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Véhicule</span>
-                  <span className="font-medium">{car?.name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Durée</span>
-                  <span className="font-medium">
-                    {Math.ceil((endDate?.getTime() || 0 - (startDate?.getTime() || 0)) / (1000 * 60 * 60 * 24))} jours
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Assurance {getSelectedInsurance()?.name}</span>
-                  <span className="font-medium">{getSelectedInsurance()?.price} Dh/jour</span>
-                </div>
-                
-                {selectedOptions.length > 0 && (
-                  <>
-                    <div className="flex justify-between font-medium">
-                      <span>Options</span>
-                      <span></span>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="message">Message au propriétaire (optionnel)</Label>
+                      <Textarea
+                        id="message"
+                        value={message}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMessage(e.target.value)}
+                        placeholder="Informations supplémentaires pour le propriétaire"
+                        rows={3}
+                      />
                     </div>
-                    {selectedOptions.map(optId => {
-                      const opt = additionalOptions.find(o => o.id === optId);
-                      return opt ? (
-                        <div key={opt.id} className="flex justify-between text-xs ml-4">
-                          <span>{opt.name}</span>
-                          <span>{opt.price} Dh</span>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="terms" 
+                        checked={acceptTerms} 
+                        onCheckedChange={(checked: boolean | "indeterminate") => setAcceptTerms(checked === true)} 
+                      />
+                      <label
+                        htmlFor="terms"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        J'accepte les conditions générales et la politique d'annulation
+                      </label>
+                    </div>
+                    
+                    <div className="bg-primary/5 p-4 rounded-md border border-primary/20">
+                      <div className="flex items-center gap-2 text-primary mb-2">
+                        <CreditCardIcon className="w-5 h-5" />
+                        <h3 className="font-medium">Informations de paiement</h3>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Le paiement sera traité une fois que le propriétaire aura accepté votre demande de réservation.
+                      </p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="cardName">Nom sur la carte</Label>
+                          <Input id="cardName" placeholder="John Doe" />
                         </div>
-                      ) : null;
-                    })}
-                  </>
-                )}
-                
-                {promoApplied && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Réduction (WELCOME)</span>
-                    <span>-10%</span>
-                  </div>
-                )}
-                
-                <div className="flex justify-between pt-2 border-t font-bold text-primary">
-                  <span>Total</span>
-                  <span>{calculateTotal()} Dh</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-        
-      case 4:
-        return (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-medium flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-primary" />
-                Méthode de paiement
-              </h3>
-              <RadioGroup
-                value={selectedPayment}
-                onValueChange={setSelectedPayment}
-                className="space-y-3"
-              >
-                {paymentMethods.map((method) => (
-                  <div 
-                    key={method.id}
-                    className={`p-3 border rounded-lg transition-all ${
-                      selectedPayment === method.id 
-                        ? 'border-primary bg-primary/5' 
-                        : 'hover:border-primary/50'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <RadioGroupItem value={method.id} id={method.id} />
-                      <div className="flex items-center gap-2">
-                        <method.icon className="w-5 h-5 text-gray-600" />
-                        <Label htmlFor={method.id} className="font-medium">
-                          {method.name}
-                        </Label>
+                        <div className="space-y-2">
+                          <Label htmlFor="cardNumber">Numéro de carte</Label>
+                          <Input id="cardNumber" placeholder="1234 5678 9012 3456" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="expiry">Date d'expiration</Label>
+                          <Input id="expiry" placeholder="MM/AA" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="cvc">CVC</Label>
+                          <Input id="cvc" placeholder="123" />
+                        </div>
                       </div>
                     </div>
                   </div>
-                ))}
-              </RadioGroup>
-            </div>
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="cardNumber">Numéro de carte</Label>
-                <div className="relative">
-                  <Input
-                    id="cardNumber"
-                    name="cardNumber"
-                    placeholder="1234 5678 9012 3456"
-                    value={formData.cardNumber}
-                    onChange={handleInputChange}
-                    required
-                  />
-                  <CreditCard className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
-                </div>
-              </div>
-              <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
-                <div className="space-y-2">
-                  <Label htmlFor="expiry">Date d'expiration</Label>
-                  <Input
-                    id="expiry"
-                    name="expiry"
-                    placeholder="MM/AA"
-                    value={formData.expiry}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="cvv">CVV</Label>
-                  <Input
-                    id="cvv"
-                    name="cvv"
-                    type="password"
-                    maxLength={3}
-                    placeholder="123"
-                    value={formData.cvv}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <input type="checkbox" id="terms" className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" />
-                <label htmlFor="terms" className="text-sm text-gray-600">
-                  J'accepte les <a href="#" className="text-primary hover:underline">conditions générales</a> et la <a href="#" className="text-primary hover:underline">politique de confidentialité</a>
-                </label>
-              </div>
-              <div className="p-4 rounded-lg bg-amber-50 border border-amber-100 flex items-start gap-2">
-                <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-amber-800">
-                  <p className="font-medium">Politique d'annulation</p>
-                  <p>Gratuite jusqu'à 48h avant le début de la location. Des frais peuvent s'appliquer en cas d'annulation tardive.</p>
-                </div>
-              </div>
-            </div>
+                  
+                  <div className="flex justify-between">
+                    <Button variant="outline" onClick={prevStep}>
+                      Retour
+                    </Button>
+                    <Button onClick={handleSubmit} disabled={isSubmitting}>
+                      {isSubmitting ? "Réservation en cours..." : "Confirmer la réservation"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             
-            <div className="p-4 rounded-lg bg-primary/5 space-y-2">
-              <div className="flex items-center justify-between text-base font-bold text-primary">
-                <span>Montant total à payer</span>
-                <span>{calculateTotal()} Dh</span>
-              </div>
-              <p className="text-xs text-gray-500">
-                Une caution de {getSelectedInsurance()?.caution || 0} Dh sera préautorisée sur votre carte bancaire mais non débitée.
-              </p>
-            </div>
-          </div>
-        );
-        
-      case 5:
-        return (
-          <div className="space-y-6">
-            <div className="text-center py-4">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-8 h-8 text-green-600" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Réservation confirmée !</h3>
-              <p className="text-gray-600">
-                Votre réservation a été confirmée. Un email de confirmation a été envoyé à {formData.email}
-              </p>
-            </div>
-            
-            <div className="p-4 border rounded-lg space-y-4">
-              <h4 className="font-medium flex items-center gap-2">
-                <Car className="w-4 h-4 text-primary" />
-                Détails de la réservation
-              </h4>
-              
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between pb-2 border-b">
-                  <span className="text-gray-600">Numéro de réservation</span>
-                  <span className="font-medium">RAK-{Math.floor(Math.random() * 1000000)}</span>
+            {/* Informations sur le véhicule */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">Informations sur le véhicule</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="aspect-video rounded-md overflow-hidden">
+                  <img 
+                    src={vehicle.image_url || vehicle.images?.[0] || "/placeholder.svg"} 
+                    alt={vehicle.name} 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 
-                <div className="grid gap-2">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Véhicule</span>
-                    <span className="font-medium">{car?.name}</span>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div>
+                    <h3 className="text-sm text-gray-500">Marque</h3>
+                    <p className="font-medium">{vehicle.make || vehicle.brand}</p>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Dates</span>
-                    <span className="font-medium">
-                      {startDate?.toLocaleDateString()} - {endDate?.toLocaleDateString()}
-                    </span>
+                  <div>
+                    <h3 className="text-sm text-gray-500">Modèle</h3>
+                    <p className="font-medium">{vehicle.model}</p>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Lieu de prise en charge</span>
-                    <span className="font-medium">{car?.location}</span>
+                  <div>
+                    <h3 className="text-sm text-gray-500">Année</h3>
+                    <p className="font-medium">{vehicle.year}</p>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Montant payé</span>
-                    <span className="font-medium text-primary">{calculateTotal()} Dh</span>
+                  <div>
+                    <h3 className="text-sm text-gray-500">Transmission</h3>
+                    <p className="font-medium">{vehicle.transmission || "Non spécifié"}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-gray-500">Carburant</h3>
+                    <p className="font-medium">{vehicle.fuel_type || vehicle.fuel || "Non spécifié"}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-gray-500">Places</h3>
+                    <p className="font-medium">{vehicle.seats || "Non spécifié"}</p>
                   </div>
                 </div>
-              </div>
-              
-              <div className={`${isMobile ? 'flex flex-col' : 'grid grid-cols-2'} gap-2 pt-2`}>
-                <Button variant="outline" className="w-full gap-2">
-                  <CalendarIcon className="w-4 h-4" />
-                  Ajouter au calendrier
-                </Button>
-                <Button variant="outline" className="w-full gap-2">
-                  <MapPin className="w-4 h-4" />
-                  Voir l'itinéraire
-                </Button>
-              </div>
-            </div>
-            
-            <div className="text-sm text-gray-600 text-center">
-              <p>Besoin d'aide ? <a href="#" className="text-primary hover:underline">Contactez-nous</a></p>
-              <p className="mt-1">Ou consultez vos <a href="#" className="text-primary hover:underline">réservations</a></p>
-            </div>
+                
+                <Separator />
+                
+                <div>
+                  <h3 className="text-sm text-gray-500 mb-1">Description</h3>
+                  <p className="text-sm">{vehicle.description || "Aucune description disponible."}</p>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm text-gray-500 mb-1">Localisation</h3>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    <p className="text-sm">{vehicle.location}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        );
-        
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50 pt-24 px-4 pb-12">
-      <div className="max-w-3xl mx-auto">
-        <Button
-          variant="ghost"
-          className="mb-6"
-          onClick={() => navigate(-1)}
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Retour
-        </Button>
-
-        <Card className="mb-6">
-          <CardHeader className="p-4 sm:p-6 pb-3">
-            <div className="flex justify-between items-center w-full flex-wrap gap-2">
-              <CardTitle className={`flex items-center gap-2 text-lg ${isMobile ? 'flex-wrap' : ''}`}>
-                <span>Étape {currentStep}/5</span>
-                <span className="text-gray-400 mx-2">•</span>
-                <span>{getStepTitle()}</span>
-              </CardTitle>
-              {currentStep < 5 && startDate && endDate && (
-                <Badge variant="outline" className="font-normal">
-                  {Math.ceil((endDate?.getTime() - startDate?.getTime()) / (1000 * 60 * 60 * 24) || 0)} jours
-                </Badge>
-              )}
-            </div>
-            <Progress value={getProgress()} className="h-1 mt-4" />
-          </CardHeader>
-          <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
-            {renderStepContent()}
-          </CardContent>
-        </Card>
-
-        <div className={`flex justify-between ${isMobile ? 'flex-col gap-3' : ''}`}>
-          {currentStep < 5 ? (
-            <>
-              {currentStep > 1 && (
-                <Button 
-                  variant="outline" 
-                  onClick={() => setCurrentStep(prev => prev - 1)}
-                  className={isMobile ? 'w-full' : ''}
-                >
-                  Retour
-                </Button>
-              )}
-              <div className={`${currentStep === 1 ? 'w-full' : ''} ${!isMobile && currentStep > 1 ? 'ml-auto' : ''}`}>
-                <Button 
-                  onClick={currentStep === 4 ? handleSubmit : () => setCurrentStep(prev => prev + 1)}
-                  disabled={!canContinue()}
-                  className={`bg-primary hover:bg-primary/90 gap-2 ${isMobile ? 'w-full' : ''} ${isMobile && currentStep === 1 ? 'mt-0' : ''}`}
-                  size={isMobile ? "default" : "lg"}
-                >
-                  {currentStep === 4 ? 'Payer et confirmer' : 'Continuer'}
-                  {currentStep < 5 && <ChevronRight className="w-4 h-4" />}
-                </Button>
-              </div>
-            </>
-          ) : (
-            <Button 
-              onClick={() => navigate('/')} 
-              className="w-full bg-primary hover:bg-primary/90" 
-              size={isMobile ? "default" : "lg"}
-            >
-              Terminer
-            </Button>
-          )}
+          
+          {/* Résumé de la réservation */}
+          <div>
+            <Card className="sticky top-24">
+              <CardHeader>
+                <CardTitle className="text-xl">Résumé de la réservation</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm">Durée de location:</span>
+                  </div>
+                  <span className="font-medium">{durationDays} jours</span>
+                </div>
+                
+                <Separator />
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>{dailyRate} MAD x {durationDays} jours</span>
+                    <span>{basePrice} MAD</span>
+                  </div>
+                  
+                  {selectedInsurance && selectedInsurance !== 'none' && (
+                    <div className="flex justify-between text-sm">
+                      <span>
+                        Assurance {selectedInsurance === 'basic' ? 'de base' : 'premium'} 
+                        ({selectedInsurance === 'basic' ? '50' : '100'} MAD/jour)
+                      </span>
+                      <span>{insurancePrice} MAD</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between text-sm">
+                    <span>Frais de service (10%)</span>
+                    <span>{serviceFee} MAD</span>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="flex justify-between font-medium">
+                    <span>Total</span>
+                    <span>{totalPrice} MAD</span>
+                  </div>
+                </div>
+                
+                <div className="bg-yellow-50 p-3 rounded-md border border-yellow-200">
+                  <div className="flex gap-2">
+                    <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0" />
+                    <div className="text-sm text-yellow-700">
+                      <p className="font-medium">Politique d'annulation</p>
+                      <p className="mt-1">Annulation gratuite jusqu'à 48h avant la prise en charge. Après ce délai, des frais peuvent s'appliquer.</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="pt-2">
+                  <p className="text-xs text-gray-500 text-center">
+                    En confirmant votre réservation, vous acceptez les conditions générales de Rakeb et la politique d'annulation.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
