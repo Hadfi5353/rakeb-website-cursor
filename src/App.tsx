@@ -35,17 +35,19 @@ import EmailDashboard from "./pages/admin/EmailDashboard";
 import OwnerBookingsDashboard from "./pages/dashboard/OwnerBookingsDashboard";
 import RenterBookingsDashboard from "./pages/dashboard/RenterBookingsDashboard";
 import BookingDetailsPage from "./pages/bookings/BookingDetailsPage";
-import BeforeOwner from "@/pages/owner/BeforeOwner";
-import Favorites from "@/pages/favorites/Favorites";
+import BeforeOwner from "./pages/owner/BeforeOwner";
+import Favorites from "./pages/favorites/Favorites";
 
 const queryClient = new QueryClient();
+
+const basename = import.meta.env.MODE === 'production' ? '/rakeb-website-cursor' : '/';
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <Router basename="/rakeb-website-cursor">
+          <Router basename={basename}>
             <div className="min-h-screen bg-background">
               <Navbar />
               <main>
@@ -56,8 +58,13 @@ function App() {
                   <Route path="/auth/forgot-password" element={<ForgotPassword />} />
                   <Route path="/auth/change-password" element={<ChangePassword />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/notifications" element={<Notifications />} />
+                  <Route path="/favorites" element={<Favorites />} />
                   <Route path="/cars/search" element={<SearchResults />} />
                   <Route path="/cars/:id" element={<CarDetail />} />
+                  <Route path="/before-owner" element={<BeforeOwner />} />
+                  <Route path="/become-owner" element={<BecomeOwner />} />
                   
                   <Route
                     path="/owner/dashboard"
@@ -82,6 +89,15 @@ function App() {
                     element={
                       <RoleRoute allowedRoles={['owner']}>
                         <AddCar />
+                      </RoleRoute>
+                    }
+                  />
+
+                  <Route
+                    path="/bookings/:id"
+                    element={
+                      <RoleRoute allowedRoles={['owner', 'renter']}>
+                        <BookingDetailsPage />
                       </RoleRoute>
                     }
                   />

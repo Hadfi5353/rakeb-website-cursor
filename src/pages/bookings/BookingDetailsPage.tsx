@@ -91,8 +91,7 @@ const BookingDetailsPage = () => {
           returnPhotos: data.return_photos || [],
           
           createdAt: data.created_at,
-          updatedAt: data.updated_at,
-          contactShared: data.contact_shared || false
+          updatedAt: data.updated_at
         };
 
         setBooking(formattedBooking);
@@ -159,8 +158,8 @@ const BookingDetailsPage = () => {
         // Mettre à jour l'état local
         setBooking({
           ...booking,
-          contactShared: true,
-          updatedAt: new Date().toISOString()
+          contact_shared: true,
+          updated_at: new Date().toISOString()
         });
 
         toast({
@@ -175,7 +174,7 @@ const BookingDetailsPage = () => {
       console.error(`Erreur lors de l'action ${action}:`, error);
       toast({
         title: "Erreur",
-        description: error.message || `Impossible d'effectuer l'action demandée.`,
+        description: (error as Error).message || `Impossible d'effectuer l'action demandée.`,
         variant: "destructive"
       });
     }
@@ -232,7 +231,7 @@ const BookingDetailsPage = () => {
         <div className="max-w-4xl mx-auto">
           <BookingDetails 
             booking={booking} 
-            userRole={userRole} 
+            userRole={userRole ?? "renter"} // Provide default value to satisfy type
             onAction={handleBookingAction} 
           />
         </div>
