@@ -46,7 +46,7 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <Toaster position="bottom-right" />
         <AuthProvider>
-          <Router>
+          <Router basename="/rakeb-website-cursor">
             <div className="min-h-screen bg-background">
               <Navbar />
               <EmailProcessor />
