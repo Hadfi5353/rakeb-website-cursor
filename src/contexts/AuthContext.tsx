@@ -18,7 +18,17 @@ interface AuthContextType {
   isLoading: boolean;
   error: string | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, userData: { first_name: string; last_name: string }) => Promise<void>;
+  signUp: (data: { 
+    email: string; 
+    password: string; 
+    options: { 
+      data: { 
+        first_name: string; 
+        last_name: string;
+        role: 'owner' | 'renter';
+      } 
+    } 
+  }) => Promise<boolean>;
   signOut: () => Promise<void>;
   updateProfile: (data: { first_name?: string; last_name?: string; phone?: string }) => Promise<void>;
   getUserRole: () => Promise<'owner' | 'renter' | 'admin' | null>;
@@ -75,38 +85,71 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string, userData: { first_name: string; last_name: string }) => {
+  const signUp = async (data: { 
+    email: string; 
+    password: string; 
+    options: { 
+      data: { 
+        first_name: string; 
+        last_name: string;
+        role: 'owner' | 'renter';
+      } 
+    } 
+  }) => {
     try {
       setError(null);
       setIsLoading(true);
       
-      const { error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
+      // 1. Créer l'utilisateur dans auth.users
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
         options: {
           data: {
-            first_name: userData.first_name,
-            last_name: userData.last_name,
+            first_name: data.options.data.first_name,
+            last_name: data.options.data.last_name,
+            role: data.options.data.role
           },
         },
       });
       
       if (signUpError) throw signUpError;
+      if (!authData.user) throw new Error('No user data returned from signup');
 
-      // Create profile record
-      const { error: profileError } = await supabase
+      // 2. Vérifier si le profil existe déjà
+      const { data: existingProfile } = await supabase
         .from('profiles')
-        .insert([
-          {
-            user_id: (await supabase.auth.getUser()).data.user?.id,
-            first_name: userData.first_name,
-            last_name: userData.last_name,
-            email,
-          },
-        ]);
+        .select()
+        .eq('id', authData.user.id)
+        .single();
 
-      if (profileError) throw profileError;
+      if (!existingProfile) {
+        // 3. Créer le profil seulement s'il n'existe pas
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert([
+            {
+              id: authData.user.id,
+              email: data.email,
+              first_name: data.options.data.first_name,
+              last_name: data.options.data.last_name,
+              role: data.options.data.role,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            },
+          ], {
+            onConflict: 'id'
+          });
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+          throw new Error('Failed to create user profile');
+        }
+      }
+
+      return true;
     } catch (err) {
+      console.error('Signup error:', err);
       setError(err instanceof Error ? err.message : 'Failed to sign up');
       throw err;
     } finally {

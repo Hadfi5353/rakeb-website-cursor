@@ -407,7 +407,7 @@ const RenterDashboard = () => {
                 Voir toutes mes réservations
               </Link>
             </Button>
-          </div>
+        </div>
         </div>
 
         {/* Notifications */}
@@ -522,13 +522,13 @@ const RenterDashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           {/* Liste des réservations */}
           <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Mes réservations</CardTitle>
-              </CardHeader>
-              <CardContent>
+        <Card>
+          <CardHeader>
+            <CardTitle>Mes réservations</CardTitle>
+          </CardHeader>
+          <CardContent>
                 <Tabs defaultValue="all">
-                  <TabsList>
+              <TabsList>
                     <TabsTrigger value="all">
                       Toutes
                       {bookings.length > 0 && (
@@ -577,7 +577,7 @@ const RenterDashboard = () => {
                         </Badge>
                       )}
                     </TabsTrigger>
-                  </TabsList>
+              </TabsList>
 
                   <TabsContent value="all" className="mt-4">
                     <ReservationsTable reservations={bookings} />
@@ -589,22 +589,22 @@ const RenterDashboard = () => {
 
                   <TabsContent value="confirmed" className="mt-4">
                     <ReservationsTable reservations={bookings.filter(b => b.status === 'confirmed')} />
-                  </TabsContent>
+              </TabsContent>
 
                   <TabsContent value="active" className="mt-4">
                     <ReservationsTable reservations={bookings.filter(b => b.status === 'in_progress')} />
-                  </TabsContent>
+              </TabsContent>
 
                   <TabsContent value="completed" className="mt-4">
                     <ReservationsTable reservations={bookings.filter(b => b.status === 'completed')} />
-                  </TabsContent>
+              </TabsContent>
 
                   <TabsContent value="rejected" className="mt-4">
                     <ReservationsTable reservations={bookings.filter(b => b.status === 'rejected')} />
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
           </div>
 
           {/* Graphique des statuts */}

@@ -35,83 +35,117 @@ import EmailDashboard from "./pages/admin/EmailDashboard";
 import OwnerBookingsDashboard from "./pages/dashboard/OwnerBookingsDashboard";
 import RenterBookingsDashboard from "./pages/dashboard/RenterBookingsDashboard";
 import BookingDetailsPage from "./pages/bookings/BookingDetailsPage";
-import BeforeOwner from "./pages/owner/BeforeOwner";
-import Favorites from "./pages/favorites/Favorites";
+import BeforeOwner from "@/pages/owner/BeforeOwner";
+import Favorites from "@/pages/favorites/Favorites";
 
 const queryClient = new QueryClient();
 
-const basename = import.meta.env.MODE === 'production' ? '/rakeb-website-cursor' : '/';
-
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <Toaster position="bottom-right" />
         <AuthProvider>
-          <Router basename={basename}>
+          <Router>
             <div className="min-h-screen bg-background">
               <Navbar />
-              <main>
+              <EmailProcessor />
+              <main className="pt-16">
                 <Routes>
                   <Route path="/" element={<Index />} />
+                  <Route path="/search" element={<SearchResults />} />
                   <Route path="/auth/login" element={<Login />} />
                   <Route path="/auth/register" element={<Register />} />
                   <Route path="/auth/forgot-password" element={<ForgotPassword />} />
                   <Route path="/auth/change-password" element={<ChangePassword />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/notifications" element={<Notifications />} />
-                  <Route path="/favorites" element={<Favorites />} />
-                  <Route path="/cars/search" element={<SearchResults />} />
-                  <Route path="/cars/:id" element={<CarDetail />} />
-                  <Route path="/before-owner" element={<BeforeOwner />} />
-                  <Route path="/become-owner" element={<BecomeOwner />} />
-                  
-                  <Route
-                    path="/owner/dashboard"
-                    element={
-                      <RoleRoute allowedRoles={['owner']}>
-                        <OwnerDashboard />
-                      </RoleRoute>
-                    }
-                  />
-                  
-                  <Route
-                    path="/dashboard"
+                  <Route 
+                    path="/dashboard/renter" 
                     element={
                       <RoleRoute allowedRoles={['renter']}>
                         <RenterDashboard />
                       </RoleRoute>
-                    }
+                    } 
                   />
-                  
-                  <Route
-                    path="/cars/add"
+                  <Route 
+                    path="/dashboard/owner" 
+                    element={
+                      <RoleRoute allowedRoles={['owner']}>
+                        <OwnerDashboard />
+                      </RoleRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/dashboard/owner/vehicles" 
+                    element={
+                      <RoleRoute allowedRoles={['owner']}>
+                        <OwnerVehicles />
+                      </RoleRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/dashboard/owner/bookings" 
+                    element={
+                      <RoleRoute allowedRoles={['owner']}>
+                        <OwnerBookingsDashboard />
+                      </RoleRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/dashboard/renter/bookings" 
+                    element={
+                      <RoleRoute allowedRoles={['renter']}>
+                        <RenterBookingsDashboard />
+                      </RoleRoute>
+                    } 
+                  />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/notifications" element={<Notifications />} />
+                  <Route path="/favorites" element={<Favorites />} />
+                  <Route 
+                    path="/cars/add" 
                     element={
                       <RoleRoute allowedRoles={['owner']}>
                         <AddCar />
                       </RoleRoute>
-                    }
+                    } 
                   />
-
-                  <Route
-                    path="/bookings/:id"
+                  <Route path="/cars/:id" element={<CarDetail />} />
+                  <Route path="/cars/:id/reserve" element={<ReservationPage />} />
+                  <Route path="/before-owner" element={<BeforeOwner />} />
+                  <Route path="/become-owner" element={<BecomeOwner />} />
+                  <Route path="/how-it-works" element={<HowItWorks />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/legal" element={<Legal />} />
+                  <Route path="/legal/privacy" element={<Privacy />} />
+                  <Route path="/legal/insurance" element={<Insurance />} />
+                  <Route path="/owner/tools" element={<OwnerTools />} />
+                  <Route path="/documents/verification" element={<DocumentVerification />} />
+                  <Route 
+                    path="/bookings/:id" 
                     element={
-                      <RoleRoute allowedRoles={['owner', 'renter']}>
+                      <RoleRoute allowedRoles={['renter', 'owner']}>
                         <BookingDetailsPage />
                       </RoleRoute>
-                    }
+                    } 
                   />
-                  
+                  <Route 
+                    path="/admin/emails" 
+                    element={
+                      <RoleRoute allowedRoles={['admin']}>
+                        <EmailDashboard />
+                      </RoleRoute>
+                    } 
+                  />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
               <Toaster />
-              <EmailProcessor />
             </div>
           </Router>
         </AuthProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 

@@ -12,13 +12,14 @@ import {
   DollarSign,
   Shield,
   Clock,
-  Headphones,
+  Headset,
   ArrowRight,
   CheckCircle,
-  PiggyBank,
+  CircleDollarSign,
   Key,
-  BadgeCheck,
+  CheckCircle2,
   Calculator,
+  Users
 } from "lucide-react";
 import FAQ from "@/components/FAQ";
 import Testimonials from "@/components/Testimonials";
@@ -41,12 +42,12 @@ const steps = [
   {
     title: "Rencontrez vos locataires",
     description: "Acceptez les demandes qui vous conviennent et organisez les remises de clés selon vos préférences.",
-    icon: UserCheck,
+    icon: Users,
   },
   {
     title: "Recevez vos gains",
     description: "Les paiements sont sécurisés et versés directement sur votre compte dans les 24h suivant la location.",
-    icon: PiggyBank,
+    icon: CircleDollarSign,
   },
 ];
 
@@ -69,7 +70,7 @@ const benefits = [
   {
     title: "Support dédié",
     description: "Une équipe locale disponible 7j/7 pour vous accompagner en français et en arabe.",
-    icon: HeadphonesIcon,
+    icon: Headset,
   },
 ];
 
@@ -111,7 +112,7 @@ const BecomeOwner = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-6 py-2 rounded-full shadow-sm mb-8">
-              <BadgeCheck className="w-5 h-5 text-primary" />
+              <CheckCircle2 className="w-5 h-5 text-primary" />
               <span className="text-sm font-medium">Plus de 1 000 propriétaires nous font confiance</span>
             </div>
             
