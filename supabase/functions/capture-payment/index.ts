@@ -37,9 +37,9 @@ serve(async (req) => {
     }
 
     // Récupérer les données du corps de la requête
-    const { booking_id } = await req.json()
+    const { bookingId } = await req.json()
 
-    if (!booking_id) {
+    if (!bookingId) {
       return new Response(JSON.stringify({ error: 'Booking ID is required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
@@ -49,8 +49,8 @@ serve(async (req) => {
     // Récupérer les détails de la réservation
     const { data: booking, error: bookingError } = await supabaseClient
       .from('bookings')
-      .select('*, vehicle:vehicles(owner_id)')
-      .eq('id', booking_id)
+      .select('*, vehicles(*)')
+      .eq('id', bookingId)
       .single()
 
     if (bookingError || !booking) {
@@ -61,42 +61,63 @@ serve(async (req) => {
     }
 
     // Vérifier que l'utilisateur est le propriétaire du véhicule
-    if (booking.vehicle.owner_id !== user.id) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+    if (booking.vehicles.owner_id !== user.id) {
+      return new Response(JSON.stringify({ error: 'Not authorized to capture this payment' }), {
         status: 403,
         headers: { 'Content-Type': 'application/json' },
       })
     }
 
-    // Vérifier que le paiement est en attente de capture
-    if (booking.payment_status !== 'preauthorized') {
-      return new Response(JSON.stringify({ error: 'Payment cannot be captured' }), {
+    // Vérifier que le statut de la réservation est 'pending'
+    if (booking.status !== 'pending') {
+      return new Response(JSON.stringify({ error: 'Booking is not in pending status' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       })
     }
 
-    // Capturer le paiement
-    const paymentIntent = await stripe.paymentIntents.capture(booking.payment_intent_id)
-
-    // Mettre à jour le statut du paiement
-    const { error: updateError } = await supabaseClient
-      .from('bookings')
-      .update({
-        payment_status: 'charged',
-        status: 'confirmed',
-        updated_at: new Date().toISOString(),
+    // Vérifier que le paiement est préautorisé
+    if (booking.payment_status !== 'preauthorized' || !booking.payment_intent_id) {
+      return new Response(JSON.stringify({ error: 'No preauthorized payment found' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
       })
-      .eq('id', booking_id)
-
-    if (updateError) {
-      throw updateError
     }
 
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { 'Content-Type': 'application/json' },
-    })
+    try {
+      // Capturer le paiement
+      const paymentIntent = await stripe.paymentIntents.capture(booking.payment_intent_id)
+
+      if (paymentIntent.status === 'succeeded') {
+        // Mettre à jour le statut de la réservation
+        const { error: updateError } = await supabaseClient
+          .from('bookings')
+          .update({
+            status: 'confirmed',
+            payment_status: 'charged',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', bookingId)
+
+        if (updateError) {
+          throw updateError
+        }
+
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { 'Content-Type': 'application/json' },
+        })
+      } else {
+        throw new Error('Payment capture failed')
+      }
+    } catch (error) {
+      console.error('Stripe error:', error)
+      return new Response(JSON.stringify({ error: 'Payment capture failed' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
   } catch (error) {
+    console.error('Error:', error)
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },

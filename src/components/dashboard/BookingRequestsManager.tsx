@@ -83,7 +83,7 @@ export const BookingRequestsManager = ({
 
       // Capturer le paiement
       const { error: captureError } = await supabase.functions.invoke('capture-payment', {
-        body: { booking_id: booking.id }
+        body: { bookingId: booking.id }
       });
 
       if (captureError) {

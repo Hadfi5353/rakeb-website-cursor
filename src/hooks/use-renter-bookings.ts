@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 import { BookingStatus } from '@/types/booking';
-import { bookingsApi } from '@/lib/api';
 
 export interface RenterBooking {
   id: string;
@@ -36,27 +38,98 @@ export interface RenterBooking {
 }
 
 export const useRenterBookings = () => {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [isSubscribed, setIsSubscribed] = useState(false);
 
-  const { data: bookings, isLoading, error } = useQuery({
+  // Requête pour récupérer les réservations
+  const { data: bookings = [], isLoading, error } = useQuery({
     queryKey: ['renter-bookings'],
     queryFn: async () => {
-      const response = await bookingsApi.getRenterBookings();
-      return response.data as RenterBooking[];
-    }
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from('bookings')
+        .select(`
+          *,
+          vehicle:vehicles(*),
+          owner:profiles!owner_id(*)
+        `)
+        .eq('renter_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user
   });
 
-  const cancelMutation = useMutation({
-    mutationFn: async (bookingId: string) => {
-      await bookingsApi.cancelBooking(bookingId);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['renter-bookings'] });
-    }
-  });
+  // Souscription aux changements en temps réel
+  useEffect(() => {
+    if (!user || isSubscribed) return;
+
+    const subscription = supabase
+      .channel('renter-bookings')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'bookings',
+          filter: `renter_id=eq.${user.id}`
+        },
+        async (payload) => {
+          console.log('Changement détecté dans les réservations:', payload);
+          
+          // Rafraîchir les données
+          await queryClient.invalidateQueries({ queryKey: ['renter-bookings'] });
+          
+          // Notifications selon le type de changement
+          if (payload.eventType === 'UPDATE') {
+            const newStatus = payload.new.status;
+            switch (newStatus) {
+              case 'confirmed':
+                toast.success('Votre réservation a été acceptée !');
+                break;
+              case 'rejected':
+                toast.error('Votre réservation a été refusée');
+                break;
+              case 'cancelled':
+                toast.info('Votre réservation a été annulée');
+                break;
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    setIsSubscribed(true);
+
+    return () => {
+      subscription.unsubscribe();
+      setIsSubscribed(false);
+    };
+  }, [user, queryClient, isSubscribed]);
 
   const cancelBooking = async (bookingId: string) => {
-    await cancelMutation.mutateAsync(bookingId);
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({
+          status: 'cancelled',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', bookingId)
+        .eq('renter_id', user?.id);
+
+      if (error) throw error;
+
+      toast.success('Réservation annulée avec succès');
+      await queryClient.invalidateQueries({ queryKey: ['renter-bookings'] });
+    } catch (error) {
+      console.error('Erreur lors de l\'annulation de la réservation:', error);
+      toast.error('Impossible d\'annuler la réservation');
+    }
   };
 
   return {
@@ -64,6 +137,6 @@ export const useRenterBookings = () => {
     isLoading,
     error,
     cancelBooking,
-    isUpdating: cancelMutation.isPending
+    refresh: () => queryClient.invalidateQueries({ queryKey: ['renter-bookings'] })
   };
 }; 
