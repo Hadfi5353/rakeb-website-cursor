@@ -55,6 +55,7 @@ export const BookingRequestsManager = ({
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   console.log('BookingRequestsManager - Props reçus:', {
     pendingCount: pendingBookings?.length || 0,
@@ -76,33 +77,43 @@ export const BookingRequestsManager = ({
   }, [pendingBookings, confirmedBookings]);
 
   const handleAcceptBooking = async (booking: OwnerBooking) => {
-    setSelectedBooking(booking);
-    setShowAcceptDialog(true);
+    try {
+      setSelectedBooking(booking);
+      setIsSubmitting(true);
+
+      // Capturer le paiement
+      const { error: captureError } = await supabase.functions.invoke('capture-payment', {
+        body: { booking_id: booking.id }
+      });
+
+      if (captureError) {
+        throw new Error(captureError.message);
+      }
+
+      // Rafraîchir les données
+      await onRefresh();
+
+      toast({
+        title: "Réservation acceptée",
+        description: "Le paiement a été capturé et la réservation est confirmée"
+      });
+
+      setSelectedBooking(null);
+    } catch (error: any) {
+      console.error('Erreur lors de l\'acceptation de la réservation:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Une erreur est survenue lors de l'acceptation de la réservation",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleRejectBooking = (booking: OwnerBooking) => {
     setSelectedBooking(booking);
     setShowRejectDialog(true);
-  };
-
-  const confirmAcceptBooking = async () => {
-    if (!selectedBooking) return;
-    
-    try {
-      setIsProcessing(true);
-      const success = await onAcceptBooking(selectedBooking);
-      if (success) {
-        toast.success("Réservation acceptée avec succès");
-        setShowAcceptDialog(false);
-        // Rafraîchir les données immédiatement
-        onRefresh();
-      }
-    } catch (error) {
-      console.error("Erreur lors de l'acceptation de la réservation:", error);
-      toast.error("Erreur lors de l'acceptation de la réservation");
-    } finally {
-      setIsProcessing(false);
-    }
   };
 
   const confirmRejectBooking = async () => {
@@ -585,7 +596,7 @@ export const BookingRequestsManager = ({
           
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmAcceptBooking}>Accepter</AlertDialogAction>
+            <AlertDialogAction onClick={handleAcceptBooking}>Accepter</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -448,68 +448,85 @@ export const useBooking = (props?: UseBookingProps) => {
   }, [user, toast, getOwnerBookings]);
   
   /**
-   * Fonction pour créer une réservation qui ne vérifie pas la disponibilité pour le développement
+   * Fonction pour vérifier la disponibilité d'un véhicule
+   */
+  const checkVehicleAvailability = async (vehicleId: string, startDate: string, endDate: string): Promise<boolean> => {
+    try {
+      // Vérifier les réservations existantes qui se chevauchent
+      const { data: existingBookings, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('vehicle_id', vehicleId)
+        .in('status', ['pending', 'confirmed', 'in_progress'])
+        .or(
+          `and(start_date.lte.${endDate},end_date.gte.${startDate}),` + // Chevauchement complet
+          `and(start_date.gte.${startDate},start_date.lte.${endDate}),` + // Début pendant la période
+          `and(end_date.gte.${startDate},end_date.lte.${endDate})` // Fin pendant la période
+        );
+
+      if (error) {
+        console.error("Erreur lors de la vérification de la disponibilité:", error);
+        throw error;
+      }
+
+      // Si des réservations existent pour cette période, le véhicule n'est pas disponible
+      if (existingBookings && existingBookings.length > 0) {
+        console.log("Réservations existantes trouvées:", existingBookings);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Erreur lors de la vérification de la disponibilité:", error);
+      return false;
+    }
+  };
+  
+  /**
+   * Fonction pour créer une réservation qui vérifie la disponibilité du véhicule
    */
   const createBookingRequest = useCallback(async (
     request: BookingRequest
   ): Promise<BookingResponse> => {
     try {
-      if (!user) throw new Error("Utilisateur non connecté");
+      if (!user) {
+        throw new Error("Utilisateur non authentifié");
+      }
 
-      console.log("Création d'une réservation pour le véhicule:", request.vehicleId);
+      // Vérifier la disponibilité du véhicule
+      const isAvailable = await checkVehicleAvailability(
+        request.vehicleId,
+        request.startDate,
+        request.endDate
+      );
 
-      // Récupérer les informations du véhicule
+      if (!isAvailable) {
+        throw new Error("Ce véhicule n'est pas disponible pour les dates sélectionnées");
+      }
+
+      // Récupérer les informations du véhicule et du propriétaire
       const { data: vehicleData, error: vehicleError } = await supabase
         .from('vehicles')
-        .select('*')
+        .select(`
+          *,
+          owner:profiles!owner_id(*)
+        `)
         .eq('id', request.vehicleId)
         .single();
 
-      if (vehicleError || !vehicleData) {
+      if (vehicleError) {
         console.error("Erreur lors de la récupération du véhicule:", vehicleError);
-        throw new Error("Véhicule non trouvé");
+        throw vehicleError;
       }
 
-      // Récupérer l'ID du propriétaire
-      let ownerId = vehicleData.owner_id;
-      
-      // Si l'ID du propriétaire est spécifique, l'utiliser
-      const specificOwnerId = 'ea3e8eda-dae4-44cb-b9ac-8a7394e6738b';
-      if (vehicleData.owner_id === specificOwnerId) {
-        console.log("ID de propriétaire spécifique détecté:", specificOwnerId);
-        ownerId = specificOwnerId;
-      }
-      
-      if (!ownerId) {
-        console.error("Propriétaire du véhicule non trouvé");
-        throw new Error("Propriétaire du véhicule non trouvé");
-      }
-
-      console.log("Propriétaire identifié:", ownerId);
-
-      // Calculer la durée et les prix
-      const startDate = new Date(request.startDate);
-      const endDate = new Date(request.endDate);
-      const durationDays = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
-      
+      const ownerId = vehicleData.owner_id;
+      const durationDays = calculateDurationDays(request.startDate, request.endDate);
       const basePrice = vehicleData.price_per_day * durationDays;
-      const serviceFee = Math.round(basePrice * 0.10); // 10% de frais de service
-      const insuranceFee = 0; // À implémenter plus tard
-      const totalPrice = basePrice + serviceFee + insuranceFee;
+      const insuranceFee = calculateInsuranceFee(basePrice, request.insuranceOption);
+      const serviceFee = Math.round(basePrice * 0.1); // 10% de frais de service
+      const totalPrice = basePrice + insuranceFee + serviceFee;
       const depositAmount = vehicleData.security_deposit || Math.round(basePrice * 0.3);
 
-      console.log("Création d'une réservation avec les données suivantes:", {
-        vehicleId: request.vehicleId,
-        renterId: user.id,
-        ownerId,
-        startDate: request.startDate,
-        endDate: request.endDate,
-        durationDays,
-        basePrice,
-        serviceFee,
-        totalPrice
-      });
-      
       // Insérer la réservation dans la base de données
       const { data: bookingData, error: bookingError } = await supabase
         .from('bookings')
@@ -532,37 +549,54 @@ export const useBooking = (props?: UseBookingProps) => {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
-        .select()
+        .select(`
+          *,
+          vehicle:vehicles(*),
+          renter:profiles!renter_id(*),
+          owner:profiles!owner_id(*)
+        `)
         .single();
-      
+
       if (bookingError) {
         console.error("Erreur lors de la création de la réservation:", bookingError);
         throw bookingError;
       }
-      
-      console.log("Réservation créée avec succès:", bookingData);
-      
-      // Notifier l'utilisateur
+
+      // Créer une notification pour le propriétaire
+      const { error: notificationError } = await supabase
+        .from('notifications')
+        .insert({
+          user_id: ownerId,
+          type: 'booking_request',
+          title: 'Nouvelle demande de réservation',
+          message: `Vous avez reçu une nouvelle demande de réservation pour votre véhicule ${vehicleData.make} ${vehicleData.model}`,
+          related_id: bookingData.id,
+          is_read: false
+        });
+
+      if (notificationError) {
+        console.error("Erreur lors de la création de la notification:", notificationError);
+      }
+
       toast({
         title: "Demande envoyée",
         description: "Votre demande de réservation a bien été envoyée au propriétaire."
       });
-      
+
       return {
         success: true,
         bookingId: bookingData.id
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors de la création de la réservation:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: error instanceof Error ? error.message : "Impossible de créer la réservation"
+        description: error.message || "Impossible de créer la réservation."
       });
-      
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Erreur inconnue"
+        error: error.message
       };
     }
   }, [user, toast]);

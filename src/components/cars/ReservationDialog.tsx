@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { format, addDays, differenceInDays, isBefore } from "date-fns";
+import { format, addDays, differenceInDays, isBefore, isWithinInterval } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +15,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Progress } from "@/components/ui/progress";
 import { ChevronLeft, Calendar as CalendarIcon, MapPin } from "lucide-react";
 import { DateRange } from "react-day-picker";
+import { useSupabase } from "@/lib/supabase/supabase-provider";
+import StripePaymentForm from "@/components/payment/StripePaymentForm";
 
 interface ReservationDialogProps {
   vehicle: Vehicle;
@@ -22,11 +24,17 @@ interface ReservationDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+interface BookedPeriod {
+  start: Date;
+  end: Date;
+}
+
 const ReservationDialog = ({ vehicle, open, onOpenChange }: ReservationDialogProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { supabase } = useSupabase();
   
   const today = new Date();
   const tomorrow = addDays(today, 1);
@@ -40,6 +48,7 @@ const ReservationDialog = ({ vehicle, open, onOpenChange }: ReservationDialogPro
   const [pickupLocation, setPickupLocation] = useState(vehicle.location || "");
   const [returnLocation, setReturnLocation] = useState(vehicle.location || "");
   const [message, setMessage] = useState("");
+  const [bookedPeriods, setBookedPeriods] = useState<BookedPeriod[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Calculer le prix total
@@ -49,6 +58,64 @@ const ReservationDialog = ({ vehicle, open, onOpenChange }: ReservationDialogPro
   const basePrice = dailyRate * durationDays;
   const serviceFee = Math.round(basePrice * 0.10); // 10% de frais de service
   const totalPrice = basePrice + serviceFee;
+
+  // Charger les périodes déjà réservées
+  useEffect(() => {
+    const loadBookedPeriods = async () => {
+      if (!vehicle?.id) return;
+
+      const { data: bookings, error } = await supabase
+        .from('bookings')
+        .select('start_date, end_date')
+        .eq('vehicle_id', vehicle.id)
+        .in('status', ['pending', 'confirmed', 'in_progress']);
+
+      if (error) {
+        console.error("Erreur lors du chargement des réservations:", error);
+        return;
+      }
+
+      const periods = bookings?.map(booking => ({
+        start: new Date(booking.start_date),
+        end: new Date(booking.end_date)
+      })) || [];
+
+      setBookedPeriods(periods);
+    };
+
+    loadBookedPeriods();
+  }, [vehicle?.id, supabase]);
+
+  // Fonction pour vérifier si une date est déjà réservée
+  const isDateBooked = (date: Date) => {
+    return bookedPeriods.some(period => 
+      isWithinInterval(date, { 
+        start: new Date(period.start.setHours(0, 0, 0, 0)), 
+        end: new Date(period.end.setHours(23, 59, 59, 999))
+      })
+    );
+  };
+
+  // Fonction pour vérifier si une plage de dates est disponible
+  const isRangeAvailable = (start: Date, end: Date) => {
+    // Vérifier chaque jour de la plage
+    let current = new Date(start);
+    while (current <= end) {
+      if (isDateBooked(current)) {
+        return false;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    return true;
+  };
+
+  // Fonction pour obtenir les classes CSS pour une date donnée
+  const getDateClassName = (date: Date) => {
+    if (isDateBooked(date)) {
+      return "line-through text-gray-400 bg-gray-100";
+    }
+    return "";
+  };
 
   const handleBack = () => {
     if (currentStep > 1) {
@@ -134,36 +201,165 @@ const ReservationDialog = ({ vehicle, open, onOpenChange }: ReservationDialogPro
     }
   };
 
+  const calculateTotalPrice = () => {
+    if (!dateRange?.from || !dateRange?.to) return 0;
+    const days = differenceInDays(dateRange.to, dateRange.from) + 1;
+    return days * vehicle.price_per_day;
+  };
+
+  const handlePaymentSuccess = async (paymentIntentId: string) => {
+    try {
+      setIsSubmitting(true);
+      
+      if (!dateRange?.from || !dateRange?.to || !user) {
+        throw new Error("Données de réservation invalides");
+      }
+
+      // Vérifier d'abord la disponibilité
+      const { data: existingBookings, error: checkError } = await supabase
+        .from('bookings')
+        .select('id')
+        .eq('vehicle_id', vehicle.id)
+        .in('status', ['pending', 'confirmed', 'in_progress'])
+        .overlaps('start_date', 'end_date', dateRange.from.toISOString(), dateRange.to.toISOString());
+
+      if (checkError) throw checkError;
+      
+      if (existingBookings && existingBookings.length > 0) {
+        throw new Error("Ce véhicule n'est plus disponible pour les dates sélectionnées");
+      }
+
+      const { error } = await supabase.from("bookings").insert({
+        vehicle_id: vehicle.id,
+        user_id: user.id,
+        start_date: dateRange.from.toISOString(),
+        end_date: dateRange.to.toISOString(),
+        pickup_location: pickupLocation,
+        return_location: returnLocation,
+        message,
+        total_price: calculateTotalPrice(),
+        payment_intent_id: paymentIntentId,
+        payment_status: 'preauthorized',
+        status: "pending"
+      });
+
+      if (error) {
+        if (error.code === 'P0001') {
+          throw new Error("Ce véhicule n'est plus disponible pour les dates sélectionnées");
+        }
+        throw error;
+      }
+
+      toast({
+        title: "Réservation en attente",
+        description: "Votre réservation a été enregistrée et est en attente de confirmation par le propriétaire"
+      });
+
+      onOpenChange(false);
+      navigate("/dashboard/bookings");
+    } catch (error: any) {
+      console.error("Erreur lors de la création de la réservation:", error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Une erreur est survenue lors de la création de la réservation",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePaymentError = (error: string) => {
+    toast({
+      title: "Erreur de paiement",
+      description: error,
+      variant: "destructive"
+    });
+  };
+
   const renderStep = () => {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-base">Dates de location</Label>
-                <div className="border rounded-lg p-3 bg-background">
-                  <Calendar
-                    mode="range"
-                    selected={dateRange}
-                    onSelect={setDateRange}
-                    disabled={(date) => isBefore(date, today)}
-                    numberOfMonths={isMobile ? 1 : 2}
-                    defaultMonth={tomorrow}
-                    locale={fr}
-                  />
-                </div>
-                {dateRange?.from && dateRange?.to && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <CalendarIcon className="h-4 w-4" />
-                    <span>
-                      {format(dateRange.from, 'dd/MM/yyyy')} - {format(dateRange.to, 'dd/MM/yyyy')}
-                    </span>
-                    <span className="ml-auto">{durationDays} jours</span>
-                  </div>
-                )}
-              </div>
+          <div className="space-y-4">
+            <div className="border rounded-lg p-2">
+              <Calendar
+                mode="range"
+                selected={dateRange}
+                onSelect={(range) => {
+                  if (!range) {
+                    setDateRange(range);
+                    return;
+                  }
+                  
+                  // Si seulement la date de début est sélectionnée
+                  if (range.from && !range.to) {
+                    setDateRange(range);
+                    return;
+                  }
+
+                  // Vérifier la disponibilité de la plage complète
+                  if (range.from && range.to) {
+                    if (!isRangeAvailable(range.from, range.to)) {
+                      toast({
+                        title: "Dates indisponibles",
+                        description: "Cette période contient des dates déjà réservées. Veuillez choisir une autre période.",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+                    setDateRange(range);
+                  }
+                }}
+                disabled={[
+                  { before: new Date() },
+                  ...(bookedPeriods.flatMap(period => {
+                    const days = [];
+                    let current = new Date(period.start);
+                    while (current <= period.end) {
+                      days.push({ date: new Date(current), disabled: true });
+                      current.setDate(current.getDate() + 1);
+                    }
+                    return days;
+                  }))
+                ]}
+                modifiers={{
+                  booked: (date) => isDateBooked(date),
+                  available: (date) => !isDateBooked(date) && date >= new Date()
+                }}
+                modifiersStyles={{
+                  booked: {
+                    textDecoration: "line-through",
+                    backgroundColor: "rgb(243 244 246)",
+                    color: "rgb(156 163 175)",
+                    cursor: "not-allowed"
+                  },
+                  available: {
+                    fontWeight: "normal"
+                  }
+                }}
+                numberOfMonths={isMobile ? 1 : 2}
+                locale={fr}
+                className="rounded-md"
+                classNames={{
+                  day_disabled: "opacity-50 cursor-not-allowed line-through bg-gray-100",
+                  day_today: "bg-primary/10 text-primary font-bold",
+                  day_selected: "!bg-primary text-primary-foreground hover:!bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                  day_range_middle: "!bg-primary/20 text-primary",
+                  day_hidden: "invisible",
+                  day: "hover:bg-primary/10 rounded-md transition-colors"
+                }}
+              />
             </div>
+            {dateRange?.from && dateRange?.to && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <CalendarIcon className="h-4 w-4" />
+                <span>
+                  {format(dateRange.from, 'dd/MM/yyyy')} - {format(dateRange.to, 'dd/MM/yyyy')}
+                </span>
+                <span className="ml-auto">{durationDays} jours</span>
+              </div>
+            )}
           </div>
         );
       
@@ -249,6 +445,11 @@ const ReservationDialog = ({ vehicle, open, onOpenChange }: ReservationDialogPro
                 </div>
               </div>
             </div>
+            <StripePaymentForm
+              amount={calculateTotalPrice()}
+              onSuccess={handlePaymentSuccess}
+              onError={handlePaymentError}
+            />
           </div>
         );
     }

@@ -1,80 +1,89 @@
 import { useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'react-hot-toast';
+import { useToast } from '@/components/ui/use-toast';
+import { useSupabase } from '@/lib/supabase/supabase-provider';
+import { useUser } from '@/hooks/use-user';
 
-export const useBookingNotifications = () => {
-  const { user } = useAuth();
+export function useBookingNotifications() {
+  const { supabase } = useSupabase();
+  const { user } = useUser();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!user) return;
 
-    // Subscribe to new booking notifications for owners
-    const subscription = supabase
-      .channel('new-booking-notifications')
+    // Souscrire aux notifications de réservation
+    const notificationsChannel = supabase
+      .channel('booking-notifications')
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'bookings',
-          filter: `owner_id=eq.${user.id}`,
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`
         },
-        (payload) => {
-          // Show notification for new booking
-          toast.custom((t) => (
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg">
-              <h3 className="font-semibold text-lg">New Booking Request</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                You have received a new booking request for your vehicle.
-              </p>
-              <div className="mt-2 flex gap-2">
-                <button
-                  onClick={() => {
-                    handleBookingAction(payload.new.id, 'accepted');
-                    toast.dismiss(t.id);
-                  }}
-                  className="px-3 py-1 bg-green-500 text-white rounded-md text-sm"
-                >
-                  Accept
-                </button>
-                <button
-                  onClick={() => {
-                    handleBookingAction(payload.new.id, 'refused');
-                    toast.dismiss(t.id);
-                  }}
-                  className="px-3 py-1 bg-red-500 text-white rounded-md text-sm"
-                >
-                  Refuse
-                </button>
-              </div>
-            </div>
-          ), {
-            duration: 0, // Notification won't auto-dismiss
-            position: 'top-right',
+        async (payload) => {
+          const notification = payload.new;
+          
+          // Afficher la notification
+          toast({
+            title: notification.title,
+            description: notification.message,
+            duration: 5000
           });
+
+          // Marquer comme lu après un délai
+          setTimeout(async () => {
+            await supabase
+              .from('notifications')
+              .update({ is_read: true })
+              .eq('id', notification.id);
+          }, 5000);
         }
       )
       .subscribe();
 
+    // Souscrire aux changements de réservation
+    const bookingsChannel = supabase
+      .channel('booking-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'bookings',
+          filter: `owner_id=eq.${user.id}`
+        },
+        async (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const booking = payload.new;
+            // Récupérer les informations détaillées de la réservation
+            const { data: bookingDetails } = await supabase
+              .from('bookings')
+              .select(`
+                *,
+                vehicle:vehicles(*),
+                renter:profiles!renter_id(*)
+              `)
+              .eq('id', booking.id)
+              .single();
+
+            if (bookingDetails) {
+              toast({
+                title: 'Nouvelle réservation',
+                description: `${bookingDetails.renter.first_name} souhaite louer votre ${bookingDetails.vehicle.make} ${bookingDetails.vehicle.model}`,
+                duration: 5000
+              });
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    // Nettoyage des souscriptions
     return () => {
-      subscription.unsubscribe();
+      notificationsChannel.unsubscribe();
+      bookingsChannel.unsubscribe();
     };
-  }, [user]);
-};
-
-const handleBookingAction = async (bookingId: string, status: 'accepted' | 'refused') => {
-  try {
-    const { error } = await supabase
-      .from('bookings')
-      .update({ status })
-      .eq('id', bookingId);
-
-    if (error) throw error;
-
-    toast.success(`Booking ${status} successfully`);
-  } catch (error) {
-    console.error('Error updating booking:', error);
-    toast.error('Failed to update booking status');
-  }
-}; 
+  }, [user, supabase, toast]);
+} 

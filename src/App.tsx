@@ -5,6 +5,8 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Navbar from "./components/Navbar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import AppRoutes from "./routes";
+import SupabaseProvider from "./lib/supabase/supabase-provider";
+import { StripeProvider } from '@/providers/StripeProvider';
 
 const queryClient = new QueryClient();
 
@@ -12,15 +14,19 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <BrowserRouter>
-            <Toaster />
-            <div className="min-h-screen bg-background">
-              <Navbar />
-              <AppRoutes />
-            </div>
-          </BrowserRouter>
-        </AuthProvider>
+        <SupabaseProvider>
+          <AuthProvider>
+            <StripeProvider>
+              <BrowserRouter>
+                <Toaster />
+                <div className="min-h-screen bg-background">
+                  <Navbar />
+                  <AppRoutes />
+                </div>
+              </BrowserRouter>
+            </StripeProvider>
+          </AuthProvider>
+        </SupabaseProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
